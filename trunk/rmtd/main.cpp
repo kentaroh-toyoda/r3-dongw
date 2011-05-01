@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <ctype.h>
+#include <malloc.h>
+#include <string.h>
 
 int file_size_global;
 
@@ -88,7 +90,7 @@ int main(int argc, char *argv[])
  
 /* open  the original file and read it into an array   */
 
-//get file size
+/* get file size */
 
 int originalsize;
 FILE *pFile;
@@ -102,7 +104,7 @@ rewind (pFile);
 }
 
 beta = atoi(argv[3]);
-//read file into an array
+// read file into an array
 
 unsigned char * originalfile=(unsigned char *)malloc((originalsize + 1)*sizeof(unsigned char));
 
@@ -167,7 +169,7 @@ int maxsize = (originalsize>newsize)?originalsize:newsize;
 
 //Initialize Table C
 
-Table_C = malloc((originalsize) * sizeof(char *));
+Table_C = (char**)malloc((originalsize) * sizeof(char *));
 
 if(Table_C == NULL)
 	{
@@ -177,7 +179,7 @@ if(Table_C == NULL)
 	
 for(i = 0; i < originalsize; i++)
 	{
-	Table_C[i] = malloc(newsize * sizeof(char));
+	Table_C[i] = (char*)malloc(newsize * sizeof(char));
 	if(Table_C[i] == NULL)
 		{
 		fprintf(stderr, "out of memory\n");
@@ -202,7 +204,7 @@ free(Table_C);
 
 //Initilize Table D
 
-Table_D = malloc((newsize) * sizeof(char *));
+Table_D = (char**)malloc((newsize) * sizeof(char *));
 // printf("Table D size is %d \n", newsize);
 
 
@@ -216,7 +218,7 @@ for(i = 0; i < newsize; i++)
 	{
     
  //   printf("Initialize D  i is %d \n", (newsize - i ));
-	Table_D[i] = malloc((newsize) * sizeof(char));
+	Table_D[i] = (char*)malloc((newsize) * sizeof(char));
 	if(Table_D[i] == NULL)
 		{
 		fprintf(stderr, "out of memory\n");
