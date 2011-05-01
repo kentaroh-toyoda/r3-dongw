@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # read an ihex and transform it to memory raw
-# address, len, data
+# address (4), len (4), data
 
 $ihex = $ARGV[0];
 $raw  = $ARGV[1];
@@ -35,12 +35,14 @@ while (<in>) {
 	
 	if ($rectyp == $RECTYP_DATA) {
 		if (($upperSegBaseAddr+$offset) != $physicalAddr) {
-			my $secionLen = $physicalAddr - $sectionBaseAddr;
+			my $sectionLen = $physicalAddr - $sectionBaseAddr;
+			print "write previous section size=$sectionLen ($physicalAddr - $sectionBaseAddr)\n";
 			for ($i=0; $i<4; $i++) {
 				$ihexdata[$imgStartOffset+4+$i] = (($sectionLen >> ($i*8) ) & 0xff );
 			}
 		}
 		if ($imageOffset == 0 || ($upperSegBaseAddr+$offset) != $physicalAddr) {
+			print "start new section\n";
 			$sectionCount++;
 			$physicalAddr = ($upperSegBaseAddr+$offset);
 			$sectionBaseAddr = ($upperSegBaseAddr+$offset);
@@ -58,17 +60,21 @@ while (<in>) {
 		}
 	}
 	elsif ($rectyp == $RECTYP_EXTSEG) {
+		print "??\n";
 		$upperSegBaseAddr = hex("$chars[9]$chars[10]$chars[11]$chars[12]");
 		$upperSegBaseAddr <<= 4;
 	}
 	elsif ($rectyp == $RECTYP_EOF) {
+		print "EOF\n";
 		my $sectionLen = $physicalAddr - $sectionBaseAddr;
+		print "write previous section size=$sectionLen\n";
 		for ($i=0; $i<4; $i++) {
 			$ihexdata[$imgStartOffset+4+$i] = ($sectionLen >> ($i*8) ) & 0xff;
 		}
 		for ($i=0; $i<8; $i++) {
 			$ihexdata[$imageOffset++] = 0x00;
 		}
+		print "append eight 0s\n";
 	}
 	elsif ($rectyp == $RECTYP_STARTSEG) {
 		
