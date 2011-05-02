@@ -1,46 +1,376 @@
-  Download:    0  
-Total Bytes need so far is:  1 
-  Download:    64  
-Total Bytes need so far is:  2 
-  Download:    0  
-Total Bytes need so far is:  3 
-  Download:    0  
-Total Bytes need so far is:  4 
-  Download:    104  
-Total Bytes need so far is:  5 
-  Copy from old code forward, StartingX =   5 , Starting Y = 5 , length =  11  
-Total Bytes need so far is:  13 
-  Download:    100  
-Total Bytes need so far is:  14 
-  Download:    74  
-Total Bytes need so far is:  15 
-  Download:    62  
-Total Bytes need so far is:  16 
-  Download:    64  
-Total Bytes need so far is:  17 
-  Download:    0  
-Total Bytes need so far is:  18 
-  Download:    17  
-Total Bytes need so far is:  19 
-  Download:    61  
-Total Bytes need so far is:  20 
-  Download:    64  
-Total Bytes need so far is:  21 
-  Download:    4  
-Total Bytes need so far is:  22 
-  Copy from old code forward, StartingX =   25 , Starting Y = 25 , length =  17  
-Total Bytes need so far is:  30 
-  Download:    4  
-Total Bytes need so far is:  31 
-  Download:    17  
-Total Bytes need so far is:  32 
-  Download:    61  
-Total Bytes need so far is:  33 
-  Download:    64  
-Total Bytes need so far is:  34 
-  Download:    56  
-Total Bytes need so far is:  35 
-  Copy from old code forward, StartingX =   47 , Starting Y = 47 , length =  2659  
-Total Bytes need so far is:  43 
-  Copy from new code forward, StartingX =   2705 , Starting Y = 2706 , length =  14  
-Total Bytes need so far is:  51 
+Seg Counter is : 3177 
+[4]  Download:    0000 [3FF8] 
+[5]  Download:    0040 [3FF9] 
+[6]  Download:    0000 [3FFA] 
+[7]  Download:    0000 [3FFB] 
+[8]  Download:    0068 [3FFC] 
+[16]  Copy from old code forward, StartingX =   5 , Starting Y = 5 , length =  11  
+[20]  Download:    0064 [4008] 
+[21]  Download:    004A [4009] 
+[22]  Download:    003E [400A] 
+[23]  Download:    0040 [400B] 
+[24]  Download:    0000 [400C] 
+[25]  Download:    0011 [400D] 
+[26]  Download:    003D [400E] 
+[27]  Download:    0040 [400F] 
+[28]  Download:    0004 [4010] 
+[36]  Copy from old code forward, StartingX =   25 , Starting Y = 25 , length =  17  
+[40]  Download:    0004 [4022] 
+[41]  Download:    0011 [4023] 
+[42]  Download:    003D [4024] 
+[43]  Download:    0040 [4025] 
+[44]  Download:    0038 [4026] 
+[52]  Copy from old code forward, StartingX =   47 , Starting Y = 47 , length =  297  
+[56]  Download:    0008 [4150] 
+[57]  Download:    0011 [4151] 
+[58]  Download:    0007 [4152] 
+[59]  Download:    0020 [4153] 
+[60]  Download:    0082 [4154] 
+[61]  Download:    0093 [4155] 
+[62]  Download:    000A [4156] 
+[70]  Copy from old code forward, StartingX =   351 , Starting Y = 351 , length =  115  
+[74]  Download:    0010 [41CA] 
+[75]  Download:    0011 [41CB] 
+[76]  Download:    0082 [41CC] 
+[77]  Download:    0063 [41CD] 
+[78]  Download:    0012 [41CE] 
+[86]  Copy from old code forward, StartingX =   471 , Starting Y = 471 , length =  27  
+[90]  Download:    0004 [41EA] 
+[91]  Download:    0011 [41EB] 
+[92]  Download:    0003 [41EC] 
+[93]  Download:    0020 [41ED] 
+[94]  Download:    00C2 [41EE] 
+[95]  Download:    009B [41EF] 
+[96]  Download:    0037 [41F0] 
+[104]  Copy from old code forward, StartingX =   505 , Starting Y = 505 , length =  13  
+[108]  Download:    0036 [41FE] 
+[109]  Download:    0011 [41FF] 
+[110]  Download:    0003 [4200] 
+[111]  Download:    0020 [4201] 
+[112]  Download:    00C2 [4202] 
+[113]  Download:    004B [4203] 
+[114]  Download:    0036 [4204] 
+[115]  Download:    0011 [4205] 
+[116]  Download:    0004 [4206] 
+[117]  Download:    003C [4207] 
+[118]  Download:    005F [4208] 
+[119]  Download:    0042 [4209] 
+[120]  Download:    0037 [420A] 
+[121]  Download:    0011 [420B] 
+[122]  Download:    00CF [420C] 
+[123]  Download:    004B [420D] 
+[124]  Download:    0004 [420E] 
+[125]  Download:    0011 [420F] 
+[126]  Download:    00C2 [4210] 
+[127]  Download:    004B [4211] 
+[128]  Download:    0037 [4212] 
+[136]  Copy from old code forward, StartingX =   539 , Starting Y = 539 , length =  45  
+[140]  Download:    000C [4240] 
+[141]  Download:    0011 [4241] 
+[142]  Download:    001F [4242] 
+[143]  Download:    0042 [4243] 
+[144]  Download:    000E [4244] 
+[145]  Download:    0011 [4245] 
+[146]  Download:    001E [4246] 
+[147]  Download:    0052 [4247] 
+[148]  Download:    0008 [4248] 
+[149]  Download:    0011 [4249] 
+[150]  Download:    001F [424A] 
+[151]  Download:    0062 [424B] 
+[152]  Download:    000A [424C] 
+[160]  Copy from old code forward, StartingX =   597 , Starting Y = 597 , length =  15  
+[164]  Download:    000C [425C] 
+[165]  Download:    0011 [425D] 
+[166]  Download:    001D [425E] 
+[167]  Download:    0072 [425F] 
+[168]  Download:    000E [4260] 
+[176]  Copy from old code forward, StartingX =   617 , Starting Y = 617 , length =  9  
+[180]  Download:    000C [426A] 
+[181]  Download:    0011 [426B] 
+[182]  Download:    001D [426C] 
+[183]  Download:    0072 [426D] 
+[184]  Download:    000E [426E] 
+[192]  Copy from old code forward, StartingX =   631 , Starting Y = 631 , length =  11  
+[196]  Download:    000C [427A] 
+[197]  Download:    0011 [427B] 
+[198]  Download:    001D [427C] 
+[199]  Download:    0072 [427D] 
+[200]  Download:    000E [427E] 
+[208]  Copy from old code forward, StartingX =   647 , Starting Y = 647 , length =  41  
+[212]  Download:    000C [42A8] 
+[213]  Download:    0011 [42A9] 
+[214]  Download:    0082 [42AA] 
+[215]  Download:    004F [42AB] 
+[216]  Download:    000E [42AC] 
+[224]  Copy from old code forward, StartingX =   693 , Starting Y = 693 , length =  9  
+[228]  Download:    0008 [42B6] 
+[229]  Download:    0011 [42B7] 
+[230]  Download:    0082 [42B8] 
+[231]  Download:    0049 [42B9] 
+[232]  Download:    000A [42BA] 
+[240]  Copy from old code forward, StartingX =   707 , Starting Y = 707 , length =  11  
+[244]  Download:    0008 [42C6] 
+[245]  Download:    0011 [42C7] 
+[246]  Download:    000C [42C8] 
+[247]  Download:    0011 [42C9] 
+[248]  Download:    0092 [42CA] 
+[249]  Download:    0062 [42CB] 
+[250]  Download:    000A [42CC] 
+[251]  Download:    0011 [42CD] 
+[252]  Download:    000E [42CE] 
+[253]  Download:    0011 [42CF] 
+[254]  Download:    0082 [42D0] 
+[255]  Download:    0043 [42D1] 
+[256]  Download:    0008 [42D2] 
+[257]  Download:    0011 [42D3] 
+[258]  Download:    0082 [42D4] 
+[259]  Download:    0043 [42D5] 
+[260]  Download:    000A [42D6] 
+[268]  Copy from old code forward, StartingX =   735 , Starting Y = 735 , length =  99  
+[272]  Download:    0010 [433A] 
+[273]  Download:    0011 [433B] 
+[274]  Download:    001B [433C] 
+[275]  Download:    0042 [433D] 
+[276]  Download:    0012 [433E] 
+[284]  Copy from old code forward, StartingX =   839 , Starting Y = 839 , length =  167  
+[288]  Download:    0004 [43E6] 
+[289]  Download:    0011 [43E7] 
+[290]  Download:    00F2 [43E8] 
+[291]  Download:    0043 [43E9] 
+[292]  Download:    0036 [43EA] 
+[293]  Download:    0011 [43EB] 
+[294]  Download:    00F2 [43EC] 
+[295]  Download:    0043 [43ED] 
+[296]  Download:    0037 [43EE] 
+[304]  Copy from old code forward, StartingX =   1015 , Starting Y = 1015 , length =  47  
+[308]  Download:    0018 [441E] 
+[316]  Copy from old code forward, StartingX =   1063 , Starting Y = 1063 , length =  79  
+[320]  Download:    0034 [446E] 
+[328]  Copy from old code forward, StartingX =   1143 , Starting Y = 1143 , length =  95  
+[332]  Download:    00E4 [44CE] 
+[340]  Copy from old code forward, StartingX =   1239 , Starting Y = 1239 , length =  11  
+[344]  Download:    00E4 [44DA] 
+[352]  Copy from old code forward, StartingX =   1251 , Starting Y = 1251 , length =  11  
+[356]  Download:    00E4 [44E6] 
+[364]  Copy from old code forward, StartingX =   1263 , Starting Y = 1263 , length =  17  
+[368]  Download:    009C [44F8] 
+[376]  Copy from old code forward, StartingX =   1281 , Starting Y = 1281 , length =  41  
+[380]  Download:    0036 [4522] 
+[381]  Download:    0011 [4523] 
+[382]  Download:    0010 [4524] 
+[383]  Download:    0024 [4525] 
+[384]  Download:    005E [4526] 
+[385]  Download:    0042 [4527] 
+[386]  Download:    0036 [4528] 
+[387]  Download:    0011 [4529] 
+[388]  Download:    005F [452A] 
+[389]  Download:    0042 [452B] 
+[390]  Download:    0036 [452C] 
+[391]  Download:    0011 [452D] 
+[392]  Download:    00D2 [452E] 
+[393]  Download:    004F [452F] 
+[394]  Download:    0004 [4530] 
+[395]  Download:    0011 [4531] 
+[396]  Download:    0036 [4532] 
+[397]  Download:    0011 [4533] 
+[398]  Download:    00F2 [4534] 
+[399]  Download:    0093 [4535] 
+[400]  Download:    0036 [4536] 
+[401]  Download:    0011 [4537] 
+[402]  Download:    0002 [4538] 
+[403]  Download:    0020 [4539] 
+[404]  Download:    00F2 [453A] 
+[405]  Download:    0043 [453B] 
+[406]  Download:    0037 [453C] 
+[407]  Download:    0011 [453D] 
+[408]  Download:    004F [453E] 
+[409]  Download:    004E [453F] 
+[410]  Download:    00FF [4540] 
+[411]  Download:    0043 [4541] 
+[412]  Download:    0004 [4542] 
+[420]  Copy from old code forward, StartingX =   1355 , Starting Y = 1355 , length =  23  
+[424]  Download:    0084 [455A] 
+[425]  Download:    0049 [455B] 
+[426]  Download:    00C5 [455C] 
+[427]  Download:    003F [455D] 
+[428]  Download:    0021 [455E] 
+[429]  Download:    0053 [455F] 
+[430]  Download:    0030 [4560] 
+[431]  Download:    0040 [4561] 
+[432]  Download:    0060 [4562] 
+[440]  Copy from old code forward, StartingX =   1387 , Starting Y = 1387 , length =  55  
+[444]  Download:    0036 [459A] 
+[445]  Download:    0011 [459B] 
+[446]  Download:    0010 [459C] 
+[447]  Download:    0024 [459D] 
+[448]  Download:    005E [459E] 
+[449]  Download:    0042 [459F] 
+[450]  Download:    0036 [45A0] 
+[451]  Download:    0011 [45A1] 
+[452]  Download:    005F [45A2] 
+[453]  Download:    0042 [45A3] 
+[454]  Download:    0036 [45A4] 
+[455]  Download:    0011 [45A5] 
+[456]  Download:    00D2 [45A6] 
+[457]  Download:    004F [45A7] 
+[458]  Download:    0004 [45A8] 
+[459]  Download:    0011 [45A9] 
+[460]  Download:    0036 [45AA] 
+[461]  Download:    0011 [45AB] 
+[462]  Download:    00F2 [45AC] 
+[463]  Download:    0093 [45AD] 
+[464]  Download:    0036 [45AE] 
+[465]  Download:    0011 [45AF] 
+[466]  Download:    0002 [45B0] 
+[467]  Download:    0020 [45B1] 
+[468]  Download:    00F2 [45B2] 
+[469]  Download:    0043 [45B3] 
+[470]  Download:    0037 [45B4] 
+[471]  Download:    0011 [45B5] 
+[472]  Download:    004F [45B6] 
+[473]  Download:    004E [45B7] 
+[474]  Download:    00FF [45B8] 
+[475]  Download:    0043 [45B9] 
+[476]  Download:    0004 [45BA] 
+[484]  Copy from old code forward, StartingX =   1475 , Starting Y = 1475 , length =  29  
+[488]  Download:    00A0 [45D8] 
+[496]  Copy from old code forward, StartingX =   1505 , Starting Y = 1505 , length =  71  
+[500]  Download:    0014 [4620] 
+[508]  Copy from old code forward, StartingX =   1577 , Starting Y = 1577 , length =  15  
+[512]  Download:    0014 [4630] 
+[513]  Download:    0011 [4631] 
+[514]  Download:    0015 [4632] 
+[515]  Download:    007E [4633] 
+[516]  Download:    0016 [4634] 
+[524]  Copy from old code forward, StartingX =   1597 , Starting Y = 1597 , length =  63  
+[528]  Download:    0032 [4674] 
+[529]  Download:    0011 [4675] 
+[530]  Download:    0082 [4676] 
+[531]  Download:    0048 [4677] 
+[532]  Download:    0034 [4678] 
+[533]  Download:    0011 [4679] 
+[534]  Download:    00D2 [467A] 
+[535]  Download:    0043 [467B] 
+[536]  Download:    0006 [467C] 
+[544]  Copy from old code forward, StartingX =   1669 , Starting Y = 1669 , length =  11  
+[548]  Download:    0062 [4688] 
+[556]  Copy from old code forward, StartingX =   1681 , Starting Y = 1681 , length =  55  
+[560]  Download:    0014 [46C0] 
+[561]  Download:    0011 [46C1] 
+[562]  Download:    005F [46C2] 
+[563]  Download:    004E [46C3] 
+[564]  Download:    0008 [46C4] 
+[565]  Download:    0000 [46C5] 
+[566]  Download:    006F [46C6] 
+[567]  Download:    00F3 [46C7] 
+[568]  Download:    003F [46C8] 
+[569]  Download:    0024 [46C9] 
+[570]  Download:    0007 [46CA] 
+[571]  Download:    0049 [46CB] 
+[572]  Download:    0008 [46CC] 
+[573]  Download:    004A [46CD] 
+[574]  Download:    0017 [46CE] 
+[575]  Download:    008D [46CF] 
+[576]  Download:    0014 [46D0] 
+[577]  Download:    0011 [46D1] 
+[578]  Download:    0018 [46D2] 
+[579]  Download:    007D [46D3] 
+[580]  Download:    0016 [46D4] 
+[588]  Copy from old code forward, StartingX =   1757 , Starting Y = 1757 , length =  13  
+[592]  Download:    0032 [46E2] 
+[600]  Copy from old code forward, StartingX =   1771 , Starting Y = 1771 , length =  31  
+[604]  Download:    0014 [4702] 
+[612]  Copy from old code forward, StartingX =   1803 , Starting Y = 1803 , length =  9  
+[616]  Download:    0021 [470C] 
+[617]  Download:    003C [470D] 
+[618]  Download:    002F [470E] 
+[619]  Download:    0093 [470F] 
+[620]  Download:    0013 [4710] 
+[621]  Download:    0024 [4711] 
+[622]  Download:    001E [4712] 
+[623]  Download:    003C [4713] 
+[624]  Download:    00D2 [4714] 
+[625]  Download:    0053 [4715] 
+[626]  Download:    0002 [4716] 
+[627]  Download:    0011 [4717] 
+[628]  Download:    005F [4718] 
+[629]  Download:    0042 [4719] 
+[630]  Download:    0002 [471A] 
+[631]  Download:    0011 [471B] 
+[632]  Download:    005F [471C] 
+[633]  Download:    00F3 [471D] 
+[634]  Download:    0018 [471E] 
+[635]  Download:    0024 [471F] 
+[643]  Copy from old code forward, StartingX =   1820 , Starting Y = 1832 , length =  46  
+[647]  Download:    00AE [474E] 
+[655]  Copy from old code forward, StartingX =   1867 , Starting Y = 1879 , length =  45  
+[659]  Download:    000C [477C] 
+[660]  Download:    0011 [477D] 
+[661]  Download:    0082 [477E] 
+[662]  Download:    004B [477F] 
+[663]  Download:    000E [4780] 
+[664]  Download:    0011 [4781] 
+[665]  Download:    0082 [4782] 
+[666]  Download:    0048 [4783] 
+[667]  Download:    0008 [4784] 
+[668]  Download:    0011 [4785] 
+[669]  Download:    0082 [4786] 
+[670]  Download:    0049 [4787] 
+[671]  Download:    000A [4788] 
+[679]  Copy from old code forward, StartingX =   1925 , Starting Y = 1937 , length =  29  
+[683]  Download:    0006 [47A6] 
+[691]  Copy from old code forward, StartingX =   1955 , Starting Y = 1967 , length =  9  
+[695]  Download:    000C [47B0] 
+[696]  Download:    0011 [47B1] 
+[697]  Download:    001B [47B2] 
+[698]  Download:    0042 [47B3] 
+[699]  Download:    000E [47B4] 
+[700]  Download:    0011 [47B5] 
+[701]  Download:    001A [47B6] 
+[702]  Download:    0052 [47B7] 
+[703]  Download:    0008 [47B8] 
+[704]  Download:    0011 [47B9] 
+[705]  Download:    001B [47BA] 
+[706]  Download:    0062 [47BB] 
+[707]  Download:    000A [47BC] 
+[708]  Download:    0011 [47BD] 
+[709]  Download:    00B0 [47BE] 
+[710]  Download:    0012 [47BF] 
+[711]  Download:    0060 [47C0] 
+[712]  Download:    0040 [47C1] 
+[713]  Download:    00C2 [47C2] 
+[714]  Download:    0043 [47C3] 
+[715]  Download:    0006 [47C4] 
+[716]  Download:    0011 [47C5] 
+[717]  Download:    001C [47C6] 
+[718]  Download:    0042 [47C7] 
+[719]  Download:    0032 [47C8] 
+[720]  Download:    0011 [47C9] 
+[721]  Download:    001D [47CA] 
+[722]  Download:    0042 [47CB] 
+[723]  Download:    0034 [47CC] 
+[724]  Download:    0011 [47CD] 
+[725]  Download:    000E [47CE] 
+[726]  Download:    004A [47CF] 
+[727]  Download:    000F [47D0] 
+[728]  Download:    004B [47D1] 
+[729]  Download:    00B0 [47D2] 
+[730]  Download:    0012 [47D3] 
+[731]  Download:    0062 [47D4] 
+[739]  Copy from old code forward, StartingX =   2001 , Starting Y = 2013 , length =  55  
+[743]  Download:    0014 [480C] 
+[744]  Download:    0011 [480D] 
+[745]  Download:    008F [480E] 
+[746]  Download:    004C [480F] 
+[747]  Download:    0014 [4810] 
+[748]  Download:    0011 [4811] 
+[749]  Download:    008F [4812] 
+[750]  Download:    004D [4813] 
+[751]  Download:    0016 [4814] 
+[759]  Copy from old code forward, StartingX =   2065 , Starting Y = 2077 , length =  143  
+[763]  Download:    00AA [48A4] 
+[771]  Copy from old code forward, StartingX =   2209 , Starting Y = 2221 , length =  237  
+[775]  Download:    00A0 [4992] 
+[783]  Copy from old code forward, StartingX =   2447 , Starting Y = 2459 , length =  211  
+[787]  Download:    0000 [4A66] 
+[795]  Copy from old code forward, StartingX =   2657 , Starting Y = 2671 , length =  49  
