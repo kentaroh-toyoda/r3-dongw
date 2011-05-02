@@ -24,7 +24,14 @@ $cmd = "perl ./hex2raw.pl $update/build/telosb/main.ihex $update/build/telosb/ma
 print "$cmd\n";
 $info = `$cmd`;
 
-$cmd = "..\\rmtd\\Debug\\rmtd.exe $base/build/telosb/main.raw $update/build/telosb/main.raw $cpcost > native.log";
+$os = $^O;
+
+if ($os =~ /MSWin32/) {
+  $cmd = "..\\rmtd\\Debug\\rmtd.exe $base/build/telosb/main.raw $update/build/telosb/main.raw $cpcost > native.log";
+}
+elsif ($os =~ /linux/) {
+	$cmd = "../rmtd/rmtd $base/build/telosb/main.raw $update/build/telosb/main.raw $cpcost > native.log";
+}
+
 print "$cmd\n";
 $info = `$cmd`;
-
