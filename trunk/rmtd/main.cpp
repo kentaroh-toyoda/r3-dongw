@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 
 int originalsize;
 FILE *pFile;
-pFile = fopen (argv[1],"r");
+pFile = fopen (argv[1],"rb");
 
 if (pFile!=NULL)
 {
@@ -129,7 +129,7 @@ originalfile[originalsize]='\0';
 FILE * qFile;
 int newsize;
 
-qFile = fopen (argv[2],"r");
+qFile = fopen (argv[2],"rb");
 
 if (qFile!=NULL){
    fseek (qFile, 0, SEEK_END);
