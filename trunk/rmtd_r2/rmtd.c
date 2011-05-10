@@ -162,9 +162,9 @@ int main(int argc, char *argv[])
   }
   free(Table_C);
 
-/*
+
   //Initilize Table D
-  Table_D = malloc((newsize) * sizeof(char *));
+  Table_D = malloc((newsize) * sizeof(unsigned char *));
   // printf("Table D size is %d \n", newsize);
   if(Table_D == NULL)
   {
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
   }
   free(Table_D);
 
-*/
+
   printf("Seg Counter is : %d \n",Seg_counter );
 
 /*
@@ -315,6 +315,7 @@ void StoreCommonSegNewcode(unsigned char** Table_D, unsigned char * nfile, int n
   }
 
 //  store the common segment in the backward order from new code
+/*
   for (m = nsize - 1; m >= 0; m--) {
     for (n = nsize - 1; n >= m; n--) {
       seg.Starting_X = m;
@@ -328,6 +329,7 @@ void StoreCommonSegNewcode(unsigned char** Table_D, unsigned char * nfile, int n
       }
     }
   }
+*/
 }
 
 /***********************************End of StoreSeg Function**********************************************/
@@ -340,6 +342,7 @@ Twoint SearchSeg(unsigned char** Table_C, unsigned char * ofile, unsigned char *
   }
   if (ofile[m] == nfile[n] && testeq(Table_C, m, n)) {
     //Table_C[m][n] = 's';
+    setueq(Table_C, m, n);
     t = SearchSeg(Table_C, ofile, nfile, m - 1, n - 1);
   } else {
     t.x = m + 1;
@@ -375,6 +378,8 @@ Segment * StoreIntoDB(Segment seg, int source){
   newnode -> source = source ;   // 1 from old code forward 2 from old code backward 3 from new code forward 4 from new code backward 
   newnode -> num = Seg_counter;
   Seg_counter ++ ;
+  printf("%d old(%d,%d) new(%d,%d)\n", source, seg.Starting_X, seg.Ending_X,
+                                               seg.Starting_Y, seg.Ending_Y);
   return newnode;
 }
 
