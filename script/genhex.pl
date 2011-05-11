@@ -57,8 +57,8 @@ while (<fd>) {
       #print "$rs[0] $rs[1]\n";
       if ($rs[1] =~ /^\./) {} # its the section name
       else {
-        push @functions, $rs[1];
-        push @labels, $rs[0];
+        push @functions, $rs[1]; # its the function name
+        push @labels, $rs[0];    # the function's allocated address
       }
     }
     if (/call/) {
@@ -82,6 +82,8 @@ print "There are $slots functions\n";
 $addr = 0xffe0;
 @infunc = ();
 @inaddr = ();
+@inuse=(); # still in use??
+
 # if there exists a tab file?
 my $opened = open intab, "<$dir/func.tab";
 
@@ -100,6 +102,17 @@ if ($opened) {
   print "need to create func.tab\n";
 }
 
+#####
+for (my $j=0; $j<@infunc; $j++) {
+	# is infunc[j] in functions??
+	my $in=0;
+	for (my $i=0; $i<@labels; $i++) {
+		if ($infunc[$j] eq $functions[$i]) {
+			$in=1;
+		}
+	}
+	$inuse[$j]=$in;
+}
 ## the new func.tab
 open outtab, ">$dir/ff.tab" or die "cannot open $dir/ff.tab\n";
 # addr is currently the minimum address
@@ -118,9 +131,22 @@ for (my $i=0; $i<@labels; $i++) {
     $lb = hex("$la");
     print "find $functions[$i]\n";
   } else {
-    $addr = $addr - 6; ## 简单的利用上面的空间，而不是复用可能被删除而空余的空间
-    $lb = $addr;
-    print "cannot find $functions[$i]\n";
+  	## is there any free space??
+  	my $usefree=0;
+  	for (my $j=0; $j<@inuse; $j++) {
+  		if (!$inuse[$j]) {
+  			# we occupy this
+  			$lb = hex("$inaddr[$j]");
+  			$usefree=1;
+  			print "cannot find $functions[$i], use free\n";
+  		}
+  	}
+  	
+  	if (!$usefree) {
+      $addr = $addr - 6; ## 简单的利用上面的空间，而不是复用可能被删除而空余的空间
+      $lb = $addr;
+      print "cannot find $functions[$i], use new\n";
+    }
   }
   my $loc16 = sprintf "%04X", $lb;
   print outtab "$functions[$i] $loc16\n";
