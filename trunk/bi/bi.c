@@ -17,6 +17,7 @@
 #endif
 
 // we should form a chained reference to reduce the # if relocation entries
+int chained=0;
 
 typedef struct reloc_t {
 	unsigned short r_offset;
@@ -68,7 +69,7 @@ void store_rela(unsigned short elf_offset, reloc_t entry)
        // pp->hnext == NULL now
        pp->hnext = newitem;
        // 4000 syma -> 4800 syma => 4000 syma -> 800 syma
-       pp->cr = newitem->entry.r_offset - pp->entry.r_offset; 
+       pp->cr = newitem->entry.r_offset - pp->entry.r_offset; // h line is for the same symbol
      }
    }
    if (!find) {
@@ -493,9 +494,10 @@ int main(int argc, char **argv)
 //       perform_chain_ref(out);
 //      write into exe/elf file
         rela_info_t * ptr;
+        
+		if (chained) {
 
-
-        for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
+         for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
           rela_info_t *pp;
           for (pp=ptr; pp != NULL; pp=pp->hnext) {
             unsigned char instr[2];
@@ -503,10 +505,10 @@ int main(int argc, char **argv)
             lseek(out, pp->elf_offset, SEEK_SET);
             write(out, instr, 2);
           }
-        } 
-
-
-        // write the relocation entry table
+         } 
+		}
+        
+		// write the relocation entry table
         for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
            write(crel, &ptr->entry, sizeof(reloc_t));
            fprintf(creltxt, "%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
@@ -522,4 +524,3 @@ int main(int argc, char **argv)
         free_rela(rela_header.vnext);
 	return 0;
 }
-
