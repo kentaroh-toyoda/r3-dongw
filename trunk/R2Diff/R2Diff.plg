@@ -1,0 +1,33 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: R2Diff - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\1\RSP1E8.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/R2Diff.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"D:\mbys\VC6\MyProjects\R2Diff\R2diff.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\1\RSP1E8.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\1\RSP1E9.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/R2Diff.pdb" /debug /machine:I386 /out:"Debug/R2Diff.exe" /pdbtype:sept 
+.\Debug\R2diff.obj
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\1\RSP1E9.tmp"
+<h3>Output Window</h3>
+Compiling...
+R2diff.cpp
+D:\mbys\VC6\MyProjects\R2Diff\R2diff.cpp(346) : warning C4101: 'k' : unreferenced local variable
+Linking...
+
+
+
+<h3>Results</h3>
+R2Diff.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>
