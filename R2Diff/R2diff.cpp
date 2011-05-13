@@ -217,6 +217,7 @@ void findCommonSegment(unsigned char* oldV, unsigned char* newV, int osize, int 
 			tmpSeg->Ending_Y = curPos + length;
 			tmpSeg->type = 1;
 			tmpSeg->fx = nFx[curPos];
+			tmpSeg->next =NULL;
 			lastseg->next = tmpSeg;
 			lastseg = tmpSeg;
 			curPos += length;
@@ -269,8 +270,11 @@ void findCommonSegment(unsigned char* oldV, unsigned char* newV, int osize, int 
 					tmpSeg->Ending_X = off1 + length;
 					tmpSeg->Ending_Y = off2 + length;
 					tmpSeg->type = 0;
+					tmpSeg->fx = i;
+					tmpSeg->next =NULL;
 					lastseg->next = tmpSeg;
 					lastseg = tmpSeg;
+
 				}
 			}
 		}
@@ -280,24 +284,27 @@ void findCommonSegment(unsigned char* oldV, unsigned char* newV, int osize, int 
 	*/
 //	printf("common seg\n");
 //	curSeg = &Seghead;
-	//while(curSeg->next != NULL)
-	//{
-	//	curSeg = curSeg->next;
+//	while(curSeg->next != NULL)
+//	{
+		
+//		Segment* lastSeg = curSeg;
+//		curSeg = curSeg->next;
 
-	//	printf("%d %d %d %d",curSeg->Starting_X,curSeg->Starting_Y,curSeg->num,curSeg->fx);
-	//	//for(int j=0;j<curSeg->num;j++)
-	//	//{
-	//	//	printf("%d ",oldVersion[curSeg->Starting_X+j]);
-	//	//}
-	//	//printf("new:");
-	//	//for(int j=0;j<curSeg->num;j++)
-	//	//{
-	//	//	printf("%d ",newVersion[curSeg->Starting_Y+j]);
-	//	//}
-	//	printf("\n");
+//		printf("%d: %d %d %d %d : %d\n",curSeg->type,curSeg->Starting_X,curSeg->Starting_Y,curSeg->num,curSeg->fx,lastSeg->next);
+//	}
+		//for(int j=0;j<curSeg->num;j++)
+		//{
+		//	printf("%d ",oldVersion[curSeg->Starting_X+j]);
+		//}
+		//printf("new:");
+		//for(int j=0;j<curSeg->num;j++)
+		//{
+		//	printf("%d ",newVersion[curSeg->Starting_Y+j]);
+		//}
+//		printf("\n");
 	
 
-	//}
+//	}
 }
 
 int compareSegment(unsigned char* oldVer, unsigned char* newVer,int ooffset, int noffset)
@@ -317,22 +324,31 @@ int compareSegment(unsigned char* oldVer, unsigned char* newVer,int ooffset, int
 Segment* conver(int index)
 {
 	Segment* curSeg = &Seghead; 
+	Segment* retSeg = NULL;
+	int count =0;
 	while(curSeg->next != NULL)
 	{
 		curSeg = curSeg->next;
+//		printf("cur Seg: %d\n",count++);
 		if(curSeg->Ending_Y > index)
 		{
 			if(curSeg->Starting_Y <= index)
 			{
-				return curSeg;
-			}
-			else
-			{
-				return NULL;
+				if(retSeg == NULL)
+				{
+					retSeg = curSeg;
+				}
+				else
+				{
+					if(retSeg->Starting_Y > curSeg->Starting_Y)
+					{
+						retSeg = curSeg;
+					}
+				}
 			}
 		}
 	}
-	return NULL;
+	return retSeg;
 }
 
 void generalMessage(int alpha, int beta)
@@ -352,15 +368,22 @@ void generalMessage(int alpha, int beta)
 		pos[i] = 0;
 		opos[i] = 0;
 	}
+	int lastCpEnd = 0;
+	int cpPos = 0;
 	for(i=0;i< newSize; i++)
 	{
-		int k;
+		cpPos = 0;
 		Segment * converSeg = conver(i);
 		if(i ==0 || stat[i-1] !=0)
 		{
 			if(converSeg != NULL)
 			{
 				k =converSeg->Starting_Y;
+				if(k<= lastCpEnd)
+				{
+					cpPos = lastCpEnd + 1 - k;
+					k= lastCpEnd +1;
+				}
 				pos[i] =k;
 				opos[i] = converSeg->Starting_X;
 				//if(k>i)
@@ -370,7 +393,7 @@ void generalMessage(int alpha, int beta)
 				if((opt[k]+beta)<(opt[i]+1+alpha))
 				{
 					opt[i+1] = opt[k]+beta;
-					stat[i] = converSeg->Starting_X;
+					stat[i] = converSeg->Starting_X + cpPos;
 					if(converSeg->type == 0)
 					{
 						stat[i] = -stat[i];
@@ -380,6 +403,10 @@ void generalMessage(int alpha, int beta)
 				{
 					opt[i+1] = opt[i]+1+alpha;
 					stat[i] =0;
+					if(stat[i-1] != 0)
+					{
+						lastCpEnd = i-1;
+					}
 				}
 
 			}
@@ -387,6 +414,10 @@ void generalMessage(int alpha, int beta)
 			{
 				opt[i+1] = opt[i]+1+alpha;
 				stat[i] =0;
+				if(stat[i-1] != 0)
+				{
+					lastCpEnd = i-1;
+				}
 			}
 		}
 		else
@@ -394,6 +425,11 @@ void generalMessage(int alpha, int beta)
 			if(converSeg != NULL)
 			{
 				k = converSeg->Starting_Y;
+				if(k<= lastCpEnd)
+				{
+					cpPos = lastCpEnd + 1 - k;
+					k= lastCpEnd +1;
+				}
 				pos[i] = k;
 				opos[i] = converSeg->Starting_X;
 				//if(k >= i)
@@ -403,13 +439,14 @@ void generalMessage(int alpha, int beta)
 				if(opt[k] + beta < opt[i] +1)
 				{
 					opt[i+1] =opt[k] + beta ;
-					stat[i] = converSeg->Starting_X;
+					stat[i] = converSeg->Starting_X + cpPos;
 					int n;
 					for(n=k;n<i;n++)
 					{
 						if(stat[n] == 0)
 						{
-							stat[n] =  converSeg->Starting_X;
+							stat[n] =  converSeg->Starting_X + cpPos;
+							opt[n+1] = opt[i+1];
 							if(converSeg->type == 0)
 							{
 								stat[i] = -stat[i];
@@ -421,12 +458,20 @@ void generalMessage(int alpha, int beta)
 				{
 					opt[i+1] = opt[i] +1;
 					stat[i] =0;
+					if(stat[i-1] != 0)
+					{
+						lastCpEnd = i-1;
+					}
 				}
 			}
 			else
 			{
 				opt[i+1] = opt[i] +1;
 				stat[i] =0;
+				if(stat[i-1] != 0)
+				{
+					lastCpEnd = i-1;
+				}
 			}
 		}
 //		pastSeg = converSeg;
@@ -515,11 +560,15 @@ void generalMessage(int alpha, int beta)
 			if(lastAddStart == i)
 			{
 				int length = i- lastCpStart;
-				printf("%d\tcost:%d\n add %x ",length,opt[i],newVersion[i]);
+				if(i>0)
+				{
+					printf("%d\tcost:%d",length,opt[i]);
+				}
+				printf("\nadd %02X ",newVersion[i]);
 			}
 			else
 			{
-				printf("%x ",newVersion[i]);
+				printf("%02X ",newVersion[i]);
 			}
 		}
 		if(i == newSize -1)
@@ -538,9 +587,9 @@ void generalMessage(int alpha, int beta)
 
 	}
 
-//	int fx1 = cFx(1322,oldVersion,p);
-//	int fx2 = cFx(1442,newVersion,p);
-//	printf("\n%d: %d",fx1,fx2);
+	/*int fx1 = cFx(1322,oldVersion,p);
+	int fx2 = cFx(1442,newVersion,p);
+	printf("\n%d: %d",fx1,fx2);*/
 }
 	int cFx(int pos, unsigned char* ver, int n)
 	{
