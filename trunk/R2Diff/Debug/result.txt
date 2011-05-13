@@ -1,85 +1,86 @@
-0	cost:0
- add 0 40 0 0 68 	cost:5
+
+add 00 40 00 00 68 	cost:5
 copy from old code	oldPos=5	newPos=5	length=11	cost:13
- add 64 4a 3e 40 0 11 3d 40 4 	cost:22
+add 64 4A 3E 40 00 11 3D 40 04 	cost:22
 copy from old code	oldPos=25	newPos=25	length=17	cost:30
- add 4 11 3d 40 38 	cost:35
+add 04 11 3D 40 38 	cost:35
 copy from old code	oldPos=47	newPos=47	length=297	cost:43
- add 8 11 7 20 82 93 a 	cost:50
+add 08 11 07 20 82 93 0A 	cost:50
 copy from old code	oldPos=351	newPos=351	length=115	cost:58
- add 10 11 82 63 12 	cost:63
+add 10 11 82 63 12 	cost:63
 copy from old code	oldPos=471	newPos=471	length=27	cost:71
- add 4 11 3 20 c2 9b 37 	cost:78
+add 04 11 03 20 C2 9B 37 	cost:78
 copy from old code	oldPos=505	newPos=505	length=13	cost:86
- add 36 11 3 20 c2 4b 36 11 4 3c 5f 42 37 11 cf 4b 4 11 c2 4b 37 	cost:107
+add 36 11 03 20 C2 4B 36 11 04 3C 5F 42 37 11 CF 4B 04 11 C2 4B 37 	cost:107
 copy from old code	oldPos=539	newPos=539	length=45	cost:115
- add c 11 1f 42 e 11 1e 52 8 11 1f 62 a 	cost:128
+add 0C 11 1F 42 0E 11 1E 52 08 11 1F 62 0A 	cost:128
 copy from old code	oldPos=597	newPos=597	length=15	cost:136
- add c 11 1d 72 e 	cost:141
+add 0C 11 1D 72 0E 	cost:141
 copy from old code	oldPos=617	newPos=617	length=9	cost:149
- add c 11 1d 72 e 	cost:154
+add 0C 11 1D 72 0E 	cost:154
 copy from old code	oldPos=631	newPos=631	length=11	cost:162
- add c 11 1d 72 e 	cost:167
+add 0C 11 1D 72 0E 	cost:167
 copy from old code	oldPos=647	newPos=647	length=41	cost:175
- add c 11 82 4f e 	cost:180
+add 0C 11 82 4F 0E 	cost:180
 copy from old code	oldPos=693	newPos=693	length=9	cost:188
- add 8 11 82 49 a 	cost:193
+add 08 11 82 49 0A 	cost:193
 copy from old code	oldPos=707	newPos=707	length=11	cost:201
- add 8 11 c 11 92 62 a 11 e 11 82 43 8 11 82 43 a 	cost:218
+add 08 11 0C 11 92 62 0A 11 0E 11 82 43 08 11 82 43 0A 	cost:218
 copy from old code	oldPos=735	newPos=735	length=99	cost:226
- add 10 11 1b 42 12 	cost:231
+add 10 11 1B 42 12 	cost:231
 copy from old code	oldPos=839	newPos=839	length=167	cost:239
- add 4 11 f2 43 36 11 f2 43 37 	cost:248
+add 04 11 F2 43 36 11 F2 43 37 	cost:248
 copy from old code	oldPos=1015	newPos=1015	length=47	cost:256
- add 18 	cost:257
+add 18 	cost:257
 copy from old code	oldPos=1063	newPos=1063	length=79	cost:265
- add 34 	cost:266
+add 34 	cost:266
 copy from old code	oldPos=1143	newPos=1143	length=95	cost:274
- add e4 	cost:275
+add E4 	cost:275
 copy from old code	oldPos=1239	newPos=1239	length=11	cost:283
- add e4 	cost:284
+add E4 	cost:284
 copy from old code	oldPos=1251	newPos=1251	length=11	cost:292
- add e4 	cost:293
+add E4 	cost:293
 copy from old code	oldPos=1263	newPos=1263	length=17	cost:301
- add 9c 	cost:302
+add 9C 	cost:302
 copy from old code	oldPos=1281	newPos=1281	length=41	cost:310
- add 36 11 10 24 5e 42 36 11 5f 42 36 11 d2 4f 4 11 36 11 f2 93 36 11 2 20 f2 43 37 11 4f 4e ff 43 4 	cost:343
+add 36 11 10 24 5E 42 36 11 5F 42 36 11 D2 4F 04 11 36 11 F2 93 36 11 02 20 F2 43 37 11 4F 4E FF 43 04 	cost:343
 copy from old code	oldPos=1355	newPos=1355	length=23	cost:351
- add 84 49 c5 3f 21 53 30 40 60 	cost:360
+add 84 49 C5 3F 21 53 30 40 60 	cost:360
 copy from old code	oldPos=1387	newPos=1387	length=55	cost:368
- add 36 11 10 24 5e 42 36 11 5f 42 36 11 d2 4f 4 11 36 11 f2 93 36 11 2 20 f2 43 37 11 4f 4e ff 43 4 	cost:401
-copy from old code	oldPos=1475	newPos=1475	length=29	cost:409
- add a0 	cost:410
-copy from old code	oldPos=1505	newPos=1505	length=71	cost:418
- add 14 	cost:419
-copy from old code	oldPos=1577	newPos=1577	length=15	cost:427
- add 14 11 15 7e 16 	cost:432
-copy from old code	oldPos=1597	newPos=1597	length=63	cost:440
- add 32 11 82 48 34 11 d2 43 6 	cost:449
-copy from old code	oldPos=1669	newPos=1669	length=11	cost:457
- add 62 	cost:458
-copy from old code	oldPos=1681	newPos=1681	length=55	cost:466
- add 14 11 5f 4e 8 0 6f f3 3f 24 7 49 8 4a 17 8d 14 11 18 7d 16 	cost:487
-copy from old code	oldPos=1757	newPos=1757	length=13	cost:495
- add 32 	cost:496
-copy from old code	oldPos=1771	newPos=1771	length=31	cost:504
- add 14 	cost:505
-copy from old code	oldPos=209	newPos=1803	length=9	cost:513
- add 21 3c 2f 93 13 24 1e 3c d2 53 2 11 5f 42 2 11 5f f3 18 24 	cost:533
-copy from old code	oldPos=1820	newPos=1832	length=46	cost:541
- add ae 	cost:542
-copy from old code	oldPos=1867	newPos=1879	length=45	cost:550
- add c 11 82 4b e 11 82 48 8 11 82 49 a 	cost:563
-copy from old code	oldPos=1925	newPos=1937	length=29	cost:571
- add 6 	cost:572
-copy from old code	oldPos=1955	newPos=1967	length=9	cost:580
- add c 11 1b 42 e 11 1a 52 8 11 1b 62 a 11 b0 12 60 40 c2 43 6 11 1c 42 32 11 1d 42 34 11 e 4a f 4b b0 12 62 	cost:617
-copy from old code	oldPos=2001	newPos=2013	length=55	cost:625
- add 14 11 8f 4c 14 11 8f 4d 16 	cost:634
-copy from old code	oldPos=2065	newPos=2077	length=143	cost:642
- add aa 	cost:643
-copy from old code	oldPos=2209	newPos=2221	length=237	cost:651
- add a0 	cost:652
-copy from old code	oldPos=2447	newPos=2459	length=211	cost:660
- add 0 	cost:661
-copy from old code	oldPos=2657	newPos=2671	length=49	cost:669
+copy from old code	oldPos=1322	newPos=1442	length=9	cost:376
+copy from new code	oldPos=1322	newPos=1451	length=31	cost:376
+copy from old code	oldPos=1482	newPos=1482	length=22	cost:384
+add A0 	cost:385
+copy from old code	oldPos=1505	newPos=1505	length=71	cost:393
+add 14 	cost:394
+copy from old code	oldPos=1577	newPos=1577	length=15	cost:402
+add 14 11 15 7E 16 	cost:407
+copy from old code	oldPos=1597	newPos=1597	length=63	cost:415
+add 32 11 82 48 34 11 D2 43 06 	cost:424
+copy from old code	oldPos=1669	newPos=1669	length=11	cost:432
+add 62 	cost:433
+copy from old code	oldPos=1681	newPos=1681	length=55	cost:441
+add 14 11 5F 4E 08 00 6F F3 3F 24 07 49 08 4A 17 8D 14 11 18 7D 16 	cost:462
+copy from old code	oldPos=1757	newPos=1757	length=13	cost:470
+add 32 	cost:471
+copy from old code	oldPos=1771	newPos=1771	length=31	cost:479
+add 14 	cost:480
+copy from old code	oldPos=209	newPos=1803	length=9	cost:488
+add 21 3C 2F 93 13 24 1E 3C D2 53 02 11 5F 42 02 11 5F F3 18 24 	cost:508
+copy from old code	oldPos=1820	newPos=1832	length=46	cost:516
+add AE 	cost:517
+copy from old code	oldPos=1867	newPos=1879	length=45	cost:525
+add 0C 11 82 4B 0E 11 82 48 08 11 82 49 0A 	cost:538
+copy from old code	oldPos=1925	newPos=1937	length=29	cost:546
+add 06 	cost:547
+copy from old code	oldPos=1955	newPos=1967	length=9	cost:555
+add 0C 11 1B 42 0E 11 1A 52 08 11 1B 62 0A 11 B0 12 60 40 C2 43 06 11 1C 42 32 11 1D 42 34 11 0E 4A 0F 4B B0 12 62 	cost:592
+copy from old code	oldPos=2001	newPos=2013	length=55	cost:600
+add 14 11 8F 4C 14 11 8F 4D 16 	cost:609
+copy from old code	oldPos=2065	newPos=2077	length=143	cost:617
+add AA 	cost:618
+copy from old code	oldPos=2209	newPos=2221	length=237	cost:626
+add A0 	cost:627
+copy from old code	oldPos=2447	newPos=2459	length=211	cost:635
+add 00 	cost:636
+copy from old code	oldPos=2657	newPos=2671	length=49	cost:644
