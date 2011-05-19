@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define alpha 0
-#define beta  8
+#define alpha 3
+#define beta  7
 
 #define p (beta-alpha)
 #define b 256
@@ -14,6 +14,13 @@ typedef struct _htentry_t {
 	struct _htentry_t *next;	
 } htentry_t;
 
+typedef struct _cmd_t {
+	int type; // add or copy
+	int length;
+	int inew; // start offset of the matching segment in new code
+	int iold; // start offset of the matching segment in old code
+} cmd_t;
+
 ///////////////////////////////////////////////////
 int hash(unsigned char *string, int offset);
 void generatefootprint();
@@ -21,6 +28,7 @@ void freefootprint();
 void freefootprintentry(htentry_t *e);
 int findk(int current, int *rm);
 void diff();
+void printcmds(int i);
 //////////////////////////////////////////////////
 
 
@@ -31,6 +39,9 @@ FILE *ofile, *nfile;
 int osize, nsize;
 unsigned char *ommap, *nmmap;
 int *opt;
+
+cmd_t *cmds;
+int *s;
 
 int main(int argc, char **argv)
 {
@@ -62,13 +73,21 @@ int main(int argc, char **argv)
 	opt = (int*)malloc((nsize+1)*sizeof(int));
 	memset(opt, 0, (nsize+1)*sizeof(int));
 	
+	cmds = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
+	s = (int*)malloc((nsize+1)*sizeof(int));
+	s[0] = 0;
+	
 	generatefootprint();
 	diff();
+	printcmds(nsize);
 	
 	freefootprint();
 	free(ommap);
 	free(nmmap);
 	free(opt);
+	free(cmds);
+	free(s);
+	
 	return 0;
 }
 
@@ -127,7 +146,7 @@ int findk(int current, int *rm)
 		int val = hash(nmmap, i);
 		if (hthead[val]) { // there are entries, false match??
 		  htentry_t *e;
-		  for (e=hthead[val]->next; e; e=e->next) {
+		  for (e=hthead[val]; e; e=e->next) {
 			  int ii=i+p-1; // new
 			  int jj=e->offset+p-1; // old
 			  
@@ -149,32 +168,74 @@ void diff()
   // opt[0]=0
   int i;
   int lastcopy=1; // so the overhead of add can be accounted in
+  
   // when considering opt[i], we know opt[0]..opt[i-1]. 
   // opt[i-1] is the overhead constructing bytes [0,...,i-2]
   // opt[i]   is the overhead constructing bytes [0,...,i-1]
   for (i=1; i<=nsize; i++) {
   	int rm=0;
   	int k = findk(i-1, &rm);
+	if (i-1==15) {
+		//findk(i-1, &rm);
+		//printf("k=%d\n", k);
+	}
   	if (k>i-1) { // no common segments, add
   		opt[i] = opt[i-1]+1;
   		if (lastcopy) opt[i] += alpha;
   		lastcopy=0;
-  		printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
+  		//printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
+		cmds[i].type = 0;
+		cmds[i].length = 1;
+		cmds[i].inew = i-1;
+		s[i] = i-1;
   	} else { // common segments found, copy or add
   		int copyoverhead=opt[k]+beta; // [0..k-1]'s overhead is opt[k] and [k..i-1] is copied
   		int addoverhead=opt[i-1]+1;
   		if (lastcopy) addoverhead += alpha;
   		
-  		if (copyoverhead<addoverhead) { // or <=, use copy
+  		if (copyoverhead<=addoverhead) { // or <=, use copy
 		  opt[i] = copyoverhead;
   		  lastcopy=1;	
-  		  printf("copy bytes New[%d,%d] from Old[%d..], opt[%d]=%d\n", k, i-1, rm, i, opt[i]);
+  		  //printf("copy bytes New[%d,%d] from Old[%d..], opt[%d]=%d\n", k, i-1, rm, i, opt[i]);
+		  cmds[i].type = 1;
+		  cmds[i].length = i-k;
+		  cmds[i].inew = k;
+		  cmds[i].iold = rm;
+		  s[i] = k; // k is the first index of CS
   		}
   		else { // use add
   			opt[i] = addoverhead;
   			lastcopy=0;
-  			printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
+  			//printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
+			cmds[i].type = 0;
+		    cmds[i].length = 1;
+		    cmds[i].inew = i-1;
+			s[i] = i-1;
   		}
   	}
   }	
 }
+
+void printcmds(int i)
+{
+  if (i==0) {
+	return;
+  }
+  printcmds(s[i]);
+  // print cmds[i]
+  switch (cmds[i].type) {
+    case 0:
+	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds[i].length, cmds[i].inew, i, opt[i]);
+	  break;
+    case 1:	
+	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
+	               cmds[i].length,
+	               cmds[i].inew, cmds[i].inew+cmds[i].length-1,
+				   cmds[i].iold, cmds[i].iold+cmds[i].length-1,
+				   i, opt[i]);
+	  break;
+    default:
+	  break;
+  }
+}
+
