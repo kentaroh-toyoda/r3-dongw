@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define alpha 3
-#define beta  7
+#define alpha 0
+#define beta  8
 
 #define p (beta-alpha)
 #define b 256
@@ -151,7 +151,7 @@ int findk(int current, int *rm)
 			  int jj=e->offset+p-1; // old
 			  
 			  int l=0; // matching symbol count
-			  for ( ; nmmap[ii]==ommap[jj]; ii--, jj--) l++;
+			  for ( ; nmmap[ii]==ommap[jj] && ii>=0 && jj>=0; ii--, jj--) l++;
 			  // ii+1 is k
 			  if (ii+1 < k) {
 			  	k=ii+1; 
@@ -159,7 +159,8 @@ int findk(int current, int *rm)
 			  }
 		  }
 		}
-	}
+	  }
+//	printf("%d:%d\n",current,k);
 	return k;
 } 
 
@@ -218,7 +219,7 @@ void diff()
 
 void printcmds(int i)
 {
-  if (i==0) {
+  if (i<=0) {
 	return;
   }
   printcmds(s[i]);
