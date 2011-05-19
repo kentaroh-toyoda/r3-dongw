@@ -31,7 +31,6 @@ void diff();
 void printcmds(int i);
 //////////////////////////////////////////////////
 
-
 htentry_t *hthead[q]; 
 htentry_t *httail[q];
 
@@ -39,6 +38,8 @@ FILE *ofile, *nfile;
 int osize, nsize;
 unsigned char *ommap, *nmmap;
 int *opt;
+int *opt0; // if add
+int *opt1; // if copy
 
 cmd_t *cmds;
 int *s;
@@ -73,13 +74,19 @@ int main(int argc, char **argv)
 	opt = (int*)malloc((nsize+1)*sizeof(int));
 	memset(opt, 0, (nsize+1)*sizeof(int));
 	
+	opt0 = (int*)malloc((nsize+1)*sizeof(int));
+	memset(opt0, 0, (nsize+1)*sizeof(int));
+	
+	opt1 = (int*)malloc((nsize+1)*sizeof(int));
+	memset(opt1, 0, (nsize+1)*sizeof(int));
+	
 	cmds = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
 	s = (int*)malloc((nsize+1)*sizeof(int));
 	s[0] = 0;
 	
 	generatefootprint();
 	diff();
-	printcmds(nsize);
+	//printcmds(nsize);
 	
 	freefootprint();
 	free(ommap);
@@ -168,7 +175,7 @@ void diff()
 {
   // opt[0]=0
   int i;
-  int lastcopy=1; // so the overhead of add can be accounted in
+  int lastcopy=1; // -1: init, 0: add, 1: copy
   
   // when considering opt[i], we know opt[0]..opt[i-1]. 
   // opt[i-1] is the overhead constructing bytes [0,...,i-2]
@@ -176,15 +183,13 @@ void diff()
   for (i=1; i<=nsize; i++) {
   	int rm=0;
   	int k = findk(i-1, &rm);
-	if (i-1==15) {
-		//findk(i-1, &rm);
-		//printf("k=%d\n", k);
-	}
-  	if (k>i-1) { // no common segments, add
+	//tmp
+	
+	if (k>i-1) { // no common segments, add
   		opt[i] = opt[i-1]+1;
   		if (lastcopy) opt[i] += alpha;
   		lastcopy=0;
-  		//printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
+  		printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
 		cmds[i].type = 0;
 		cmds[i].length = 1;
 		cmds[i].inew = i-1;
@@ -197,7 +202,7 @@ void diff()
   		if (copyoverhead<=addoverhead) { // or <=, use copy
 		  opt[i] = copyoverhead;
   		  lastcopy=1;	
-  		  //printf("copy bytes New[%d,%d] from Old[%d..], opt[%d]=%d\n", k, i-1, rm, i, opt[i]);
+  		  printf("copy bytes New[%d,%d] from Old[%d..], opt[%d]=%d\n", k, i-1, rm, i, opt[i]);
 		  cmds[i].type = 1;
 		  cmds[i].length = i-k;
 		  cmds[i].inew = k;
@@ -207,13 +212,73 @@ void diff()
   		else { // use add
   			opt[i] = addoverhead;
   			lastcopy=0;
-  			//printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
+  			printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
 			cmds[i].type = 0;
 		    cmds[i].length = 1;
 		    cmds[i].inew = i-1;
 			s[i] = i-1;
   		}
   	}
+  }	
+}
+
+void diff2()
+{
+  // opt[0]=0
+  int i;
+  int lastcmd=-1; // -1: init, 0: add, 1: opt1 is copy
+  
+  // when considering opt[i], we know opt[0]..opt[i-1]. 
+  // opt[i-1] is the overhead constructing bytes [0,...,i-2]
+  // opt[i]   is the overhead constructing bytes [0,...,i-1]
+  for (i=1; i<=nsize; i++) {
+  	int rm=0;
+  	int k = findk(i-1, &rm);
+	
+	if (lastcmd == -1) {
+	  opt0[i] = alpha+1;
+	  if (k>i-1) { // cannot copy
+		opt1[i] = opt0[i];
+	    lastcmd=0;
+	  } else { // can copy
+		opt1[i] = beta;
+	    lastcmd=1;
+	  }
+	}
+	else if (lastcmd == 0) {
+	  // the last byte can only be added
+	  opt0[i] = opt0[i-1]+1;
+	  if (k>i-1) { // cannot copy
+		opt1[i] = opt0[i];
+		lastcmd=0;
+	  } else { // can copy
+		opt1[i] = opt0[i-1]+beta;
+		lastcmd=1;
+	  }
+	}
+	else if (lastcmd == 1) {
+	  // add,add vs copy,add
+	  int addadd  = opt0[i-1]+1;
+	  int copyadd = opt1[i-1]+alpha+1;
+	  if (copyadd <= addadd) {
+	    opt0[i] = copyadd;
+	  } else {
+	    opt0[i] = addadd;
+	  }
+	  if (k>i-1) { // cannot copy: add
+		opt1[i] = opt0[i];
+		lastcmd=0;
+	  } else { // can copy
+		if (lastcmd==1) {
+		  // copy,copy
+		  opt1[i] = opt1[i-1];
+		} else {
+		  // add,copy
+		  opt1[i] = opt0[i]+beta;
+		}
+		lastcmd=1;
+	  }
+	}
   }	
 }
 
