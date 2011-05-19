@@ -29,6 +29,8 @@ void freefootprintentry(htentry_t *e);
 int findk(int current, int *rm);
 void diff();
 void printcmds(int i);
+int diff2();
+void printcmds2(int t, int i);
 //////////////////////////////////////////////////
 
 htentry_t *hthead[q]; 
@@ -42,7 +44,11 @@ int *opt0; // if add
 int *opt1; // if copy
 
 cmd_t *cmds;
+cmd_t *cmds0;
+cmd_t *cmds1;
 int *s;
+int *s0;
+int *s1;
 
 int main(int argc, char **argv)
 {
@@ -81,19 +87,29 @@ int main(int argc, char **argv)
 	memset(opt1, 0, (nsize+1)*sizeof(int));
 	
 	cmds = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
+	cmds0 = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
+	cmds1 = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
+	
 	s = (int*)malloc((nsize+1)*sizeof(int));
 	s[0] = 0;
+
+	s0 = (int*)malloc((nsize+1)*sizeof(int));
+	s0[0] = 0;
+
+	s1 = (int*)malloc((nsize+1)*sizeof(int));
+	s1[0] = 0;
+	
 	
 	generatefootprint();
-	diff();
-	//printcmds(nsize);
+	
+	printcmds2(diff2(), nsize);
 	
 	freefootprint();
 	free(ommap);
 	free(nmmap);
-	free(opt);
-	free(cmds);
-	free(s);
+	free(opt); free(opt0); free(opt1);
+	free(cmds); free(cmds0); free(cmds1);
+	free(s); free(s0); free(s1);
 	
 	return 0;
 }
@@ -222,7 +238,7 @@ void diff()
   }	
 }
 
-void diff2()
+int diff2()
 {
   // opt[0]=0
   int i;
@@ -234,25 +250,36 @@ void diff2()
   for (i=1; i<=nsize; i++) {
   	int rm=0;
   	int k = findk(i-1, &rm);
+	s[i] = i-1;
 	
 	if (lastcmd == -1) {
+	  s0[i] = s1[i] = 0; // no last cmd actually
 	  opt0[i] = alpha+1;
+	  cmds0[i].type = 0; cmds0[i].length = 1; cmds0[i].inew = i-1;
 	  if (k>i-1) { // cannot copy
 		opt1[i] = opt0[i];
+		cmds1[i].type = 0; cmds1[i].length = 1; cmds1[i].inew = i-1;
 	    lastcmd=0;
 	  } else { // can copy
 		opt1[i] = beta;
+		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
+		s[i]=k;
 	    lastcmd=1;
 	  }
 	}
 	else if (lastcmd == 0) {
 	  // the last byte can only be added
+      s0[i] = s1[i] = 0; 
 	  opt0[i] = opt0[i-1]+1;
+	  cmds0[i].type = 0; cmds0[i].length = 1; cmds0[i].inew = i-1;
 	  if (k>i-1) { // cannot copy
 		opt1[i] = opt0[i];
+		cmds1[i].type = 0; cmds1[i].length = 1; cmds1[i].inew = i-1;
 		lastcmd=0;
 	  } else { // can copy
 		opt1[i] = opt0[i-1]+beta;
+		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
+		s[i]=k;
 		lastcmd=1;
 	  }
 	}
@@ -262,24 +289,39 @@ void diff2()
 	  int copyadd = opt1[i-1]+alpha+1;
 	  if (copyadd <= addadd) {
 	    opt0[i] = copyadd;
+		s0[i] = 1;
 	  } else {
 	    opt0[i] = addadd;
+		s0[i] = 0;
 	  }
+	  cmds0[i].type = 0; cmds0[i].length = 1; cmds0[i].inew = i-1;
+	  
 	  if (k>i-1) { // cannot copy: add
 		opt1[i] = opt0[i];
+		s1[i] = s0[i];
+		cmds1[i].type = 0; cmds1[i].length = 1; cmds1[i].inew = i-1;
 		lastcmd=0;
 	  } else { // can copy
 		if (lastcmd==1) {
 		  // copy,copy
 		  opt1[i] = opt1[i-1];
+		  s1[i] = 1;
 		} else {
 		  // add,copy
 		  opt1[i] = opt0[i]+beta;
+		  s1[i] = 0;
 		}
+		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
+		s[i]=k;
 		lastcmd=1;
 	  }
 	}
-  }	
+  }
+  if (opt0[nsize]<opt1[nsize]) {
+	return 0;
+  } else {
+	return 1;
+  }
 }
 
 void printcmds(int i)
@@ -304,4 +346,46 @@ void printcmds(int i)
 	  break;
   }
 }
+
+void printcmds2(int t, int i)
+{
+  if (i<=0) return;
+  if (t==0) {
+	// cmds0
+	printcmds2(s0[i], s[i]);
+	switch (cmds0[i].type) {
+    case 0:
+	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, i, opt0[i]);
+	  break;
+    case 1:	
+	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
+	               cmds0[i].length,
+	               cmds0[i].inew, cmds0[i].inew+cmds0[i].length-1,
+				   cmds0[i].iold, cmds0[i].iold+cmds0[i].length-1,
+				   i, opt0[i]);
+	  break;
+    default:
+	  break;
+    }
+  }
+  else {
+	// cmds1
+	printcmds2(s1[i], s[i]);
+	switch (cmds1[i].type) {
+    case 0:
+	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, i, opt1[i]);
+	  break;
+    case 1:	
+	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
+	               cmds1[i].length,
+	               cmds1[i].inew, cmds1[i].inew+cmds1[i].length-1,
+				   cmds1[i].iold, cmds1[i].iold+cmds1[i].length-1,
+				   i, opt1[i]);
+	  break;
+    default:
+	  break;
+    }
+  }
+}
+
 
