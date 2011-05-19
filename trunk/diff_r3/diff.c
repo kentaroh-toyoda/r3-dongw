@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define alpha 0
-#define beta  8
+#define alpha 3
+#define beta  7
 
 #define p (beta-alpha)
 #define b 256
