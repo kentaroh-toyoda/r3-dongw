@@ -102,6 +102,7 @@ int main(int argc, char **argv)
 	
 	generatefootprint();
 	
+	//diff(); printcmds(nsize);
 	printcmds2(diff2(), nsize);
 	
 	freefootprint();
@@ -215,7 +216,7 @@ void diff()
   		int addoverhead=opt[i-1]+1;
   		if (lastcopy) addoverhead += alpha;
   		
-  		if (copyoverhead<=addoverhead) { // or <=, use copy
+  		if (copyoverhead<addoverhead) { // or <=, use copy
 		  opt[i] = copyoverhead;
   		  lastcopy=1;	
   		  printf("copy bytes New[%d,%d] from Old[%d..], opt[%d]=%d\n", k, i-1, rm, i, opt[i]);
@@ -251,6 +252,9 @@ int diff2()
   	int rm=0;
   	int k = findk(i-1, &rm);
 	s[i] = i-1;
+	if (i==1387) {
+		s[i] = i-1;
+	}
 	
 	if (lastcmd == -1) {
 	  s0[i] = s1[i] = 0; // no last cmd actually
@@ -301,14 +305,22 @@ int diff2()
 		s1[i] = s0[i];
 		cmds1[i].type = 0; cmds1[i].length = 1; cmds1[i].inew = i-1;
 		lastcmd=0;
-	  } else { // can copy
-		if (lastcmd==1) {
-		  // copy,copy
-		  opt1[i] = opt1[i-1];
+	  } else { // can copy: choose last add or last copy?
+		int addcopy = opt0[i-1]+beta;
+		int copycopy;
+		
+		if (k==cmds1[i-1].inew) {
+		  // The same segment
+		  copycopy = opt1[i-1];
+		} else {
+		  // different segments: same as addcopy, what's the better choice?
+		  copycopy = opt1[i-1]+beta;  
+		}
+  	    if (copycopy <= addcopy) {
+		  opt1[i] = copycopy;
 		  s1[i] = 1;
 		} else {
-		  // add,copy
-		  opt1[i] = opt0[i]+beta;
+		  opt1[i] = addcopy;
 		  s1[i] = 0;
 		}
 		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
@@ -355,14 +367,14 @@ void printcmds2(int t, int i)
 	printcmds2(s0[i], s[i]);
 	switch (cmds0[i].type) {
     case 0:
-	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, i, opt0[i]);
+	  printf("ADD[%d] New[%d]: opt[%d]=%d, (%d)\n", cmds0[i].length, cmds0[i].inew, i, opt0[i], s0[i]);
 	  break;
     case 1:	
-	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
+	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d, (%d)\n",
 	               cmds0[i].length,
 	               cmds0[i].inew, cmds0[i].inew+cmds0[i].length-1,
 				   cmds0[i].iold, cmds0[i].iold+cmds0[i].length-1,
-				   i, opt0[i]);
+				   i, opt0[i], s0[i]);
 	  break;
     default:
 	  break;
@@ -373,14 +385,14 @@ void printcmds2(int t, int i)
 	printcmds2(s1[i], s[i]);
 	switch (cmds1[i].type) {
     case 0:
-	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, i, opt1[i]);
+	  printf("ADD[%d] New[%d]: opt[%d]=%d, (%d)\n", cmds1[i].length, cmds1[i].inew, i, opt1[i], s1[i]);
 	  break;
     case 1:	
-	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
+	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d, (%d)\n",
 	               cmds1[i].length,
 	               cmds1[i].inew, cmds1[i].inew+cmds1[i].length-1,
 				   cmds1[i].iold, cmds1[i].iold+cmds1[i].length-1,
-				   i, opt1[i]);
+				   i, opt1[i], s1[i]);
 	  break;
     default:
 	  break;
