@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define alpha 0
-#define beta  8
+#define alpha 3
+#define beta  7
 
 #define p (beta-alpha)
 #define b 256
@@ -36,9 +36,11 @@ void printcmds2(int t, int i);
 htentry_t *hthead[q]; 
 htentry_t *httail[q];
 
-FILE *ofile, *nfile;
-int osize, nsize;
+FILE *ofile, *nfile, *delta;
+int osize, nsize, dsize;
 unsigned char *ommap, *nmmap;
+unsigned char *dmmap;
+
 int *opt;
 int *opt0; // if add
 int *opt1; // if copy
@@ -105,9 +107,16 @@ int main(int argc, char **argv)
 	//diff(); printcmds(nsize);
 	printcmds2(diff2(), nsize);
 	
+	if (argc >=4 && argv[3] != NULL) {
+	  delta = fopen(argv[3], "wb");
+	  fwrite(dmmap, dsize, 1, delta);
+	  fclose(delta);
+	}
+	
 	freefootprint();
 	free(ommap);
 	free(nmmap);
+	free(dmmap);
 	free(opt); free(opt0); free(opt1);
 	free(cmds); free(cmds0); free(cmds1);
 	free(s); free(s0); free(s1);
@@ -331,8 +340,12 @@ int diff2()
 	}
   }
   if (opt0[nsize]<opt1[nsize]) {
+	dsize = opt0[nsize];
+	dmmap = (unsigned char*)malloc(dsize);
 	return 0;
   } else {
+	dsize = opt1[nsize];
+	dmmap = (unsigned char*)malloc(dsize);
 	return 1;
   }
 }
@@ -360,6 +373,9 @@ void printcmds(int i)
   }
 }
 
+int alen=0;
+int alendx=0;
+int dx=0;
 void printcmds2(int t, int i)
 {
   if (i<=0) return;
@@ -370,6 +386,20 @@ void printcmds2(int t, int i)
 	switch (cmds0[i].type) {
     case 0:
 	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, i, opt0[i]);
+	  if (i==1 || s0[s[i]+1]==1) { // start or last cmd is copy
+		//fwrite(&cmds0[i].type, 1, 1, delta);
+		//fwrite(&cmds0[i].length, 2, 1, delta);
+		dmmap[dx] = cmds0[i].type;
+		memcpy(&dmmap[dx+1], &cmds0[i].length, 2);
+		alendx = dx+1; 
+		dx += alpha;
+	  }
+	  dmmap[dx++] = nmmap[cmds0[i].inew];
+	  alen++;
+	  if (i==nsize) {
+		  memcpy(&dmmap[alendx], &alen, 2);
+		  alen = 0;
+	  }
 	  break;
     case 1:	
 	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
@@ -377,6 +407,19 @@ void printcmds2(int t, int i)
 	               cmds0[i].inew, cmds0[i].inew+cmds0[i].length-1,
 				   cmds0[i].iold, cmds0[i].iold+cmds0[i].length-1,
 				   i, opt0[i]);
+      //fwrite(&cmds0[i].type, 1, 1, delta);
+	  //fwrite(&cmds0[i].length, 2, 1, delta);
+	  //fwrite(&cmds0[i].inew, 2, 1, delta);
+	  //fwrite(&cmds0[i].iold, 2, 1, delta);
+	  dmmap[dx] = cmds0[i].type;
+	  memcpy(&dmmap[dx+1], &cmds0[i].length, 2);
+	  memcpy(&dmmap[dx+3], &cmds0[i].inew, 2);
+	  memcpy(&dmmap[dx+5], &cmds0[i].iold, 2);
+	  dx += beta;
+	  if (alendx>0) {
+		  memcpy(&dmmap[alendx], &alen, 2);
+		  alen = 0;
+	  }
 	  break;
     default:
 	  break;
@@ -389,6 +432,20 @@ void printcmds2(int t, int i)
 	switch (cmds1[i].type) {
     case 0:
 	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, i, opt1[i]);
+	  if (i==1 || s1[s[i]+1]==1) { // start or last cmd is copy
+		//fwrite(&cmds0[i].type, 1, 1, delta);
+		//fwrite(&cmds0[i].length, 2, 1, delta);
+		dmmap[dx] = cmds1[i].type;
+		memcpy(&dmmap[dx+1], &cmds1[i].length, 2);
+		alendx = dx+1; 
+		dx += alpha;
+	  }
+	  dmmap[dx++] = nmmap[cmds1[i].inew];
+	  alen++;
+	  if (i==nsize) {
+		  memcpy(&dmmap[alendx], &alen, 2);
+		  alen = 0;
+	  }
 	  break;
     case 1:	
 	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
@@ -396,11 +453,18 @@ void printcmds2(int t, int i)
 	               cmds1[i].inew, cmds1[i].inew+cmds1[i].length-1,
 				   cmds1[i].iold, cmds1[i].iold+cmds1[i].length-1,
 				   i, opt1[i]);
+	  dmmap[dx] = cmds1[i].type;
+	  memcpy(&dmmap[dx+1], &cmds1[i].length, 2);
+	  memcpy(&dmmap[dx+3], &cmds1[i].inew, 2);
+	  memcpy(&dmmap[dx+5], &cmds1[i].iold, 2);
+	  dx += beta;
+	  if (alendx>0) {
+		  memcpy(&dmmap[alendx], &alen, 2);
+		  alen = 0;
+	  }				   
 	  break;
     default:
 	  break;
     }
   }
 }
-
-
