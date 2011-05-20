@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define alpha 3
-#define beta  7
+#define alpha 0
+#define beta  8
 
 #define p (beta-alpha)
 #define b 256
@@ -252,6 +252,7 @@ int diff2()
   	int rm=0;
   	int k = findk(i-1, &rm);
 	s[i] = i-1;
+	
 	if (i==1387) {
 		s[i] = i-1;
 	}
@@ -364,17 +365,18 @@ void printcmds2(int t, int i)
   if (i<=0) return;
   if (t==0) {
 	// cmds0
-	printcmds2(s0[i], s[i]);
+	//printcmds2(s0[i], s[i]);
+	printcmds2(s0[s[i]+1], s[i]);
 	switch (cmds0[i].type) {
     case 0:
-	  printf("ADD[%d] New[%d]: opt[%d]=%d, (%d)\n", cmds0[i].length, cmds0[i].inew, i, opt0[i], s0[i]);
+	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, i, opt0[i]);
 	  break;
     case 1:	
-	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d, (%d)\n",
+	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
 	               cmds0[i].length,
 	               cmds0[i].inew, cmds0[i].inew+cmds0[i].length-1,
 				   cmds0[i].iold, cmds0[i].iold+cmds0[i].length-1,
-				   i, opt0[i], s0[i]);
+				   i, opt0[i]);
 	  break;
     default:
 	  break;
@@ -382,17 +384,18 @@ void printcmds2(int t, int i)
   }
   else {
 	// cmds1
-	printcmds2(s1[i], s[i]);
+	//printcmds2(s1[i], s[i]);
+	printcmds2(s1[s[i]+1], s[i]);
 	switch (cmds1[i].type) {
     case 0:
-	  printf("ADD[%d] New[%d]: opt[%d]=%d, (%d)\n", cmds1[i].length, cmds1[i].inew, i, opt1[i], s1[i]);
+	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, i, opt1[i]);
 	  break;
     case 1:	
-	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d, (%d)\n",
+	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
 	               cmds1[i].length,
 	               cmds1[i].inew, cmds1[i].inew+cmds1[i].length-1,
 				   cmds1[i].iold, cmds1[i].iold+cmds1[i].length-1,
-				   i, opt1[i], s1[i]);
+				   i, opt1[i]);
 	  break;
     default:
 	  break;
