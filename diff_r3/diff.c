@@ -27,10 +27,8 @@ void generatefootprint();
 void freefootprint();
 void freefootprintentry(htentry_t *e);
 int findk(int current, int *rm);
-void diff();
-void printcmds(int i);
-int diff2();
-void printcmds2(int t, int i);
+int diff();
+void printcmds(int t, int i);
 //////////////////////////////////////////////////
 
 htentry_t *hthead[q]; 
@@ -48,9 +46,12 @@ int *opt1; // if copy
 cmd_t *cmds;
 cmd_t *cmds0;
 cmd_t *cmds1;
-int *s;
+
 int *s0;
 int *s1;
+
+int *ss0;
+int *ss1;
 
 int main(int argc, char **argv)
 {
@@ -92,8 +93,7 @@ int main(int argc, char **argv)
 	cmds0 = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
 	cmds1 = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
 	
-	s = (int*)malloc((nsize+1)*sizeof(int));
-	s[0] = 0;
+	
 
 	s0 = (int*)malloc((nsize+1)*sizeof(int));
 	s0[0] = 0;
@@ -101,11 +101,15 @@ int main(int argc, char **argv)
 	s1 = (int*)malloc((nsize+1)*sizeof(int));
 	s1[0] = 0;
 	
+	ss0 = (int*)malloc((nsize+1)*sizeof(int));
+	ss0[0] = 0;
+	
+	ss1 = (int*)malloc((nsize+1)*sizeof(int));
+	ss1[0] = 0;
 	
 	generatefootprint();
 	
-	//diff(); printcmds(nsize);
-	printcmds2(diff2(), nsize);
+	printcmds(diff(), nsize);
 	
 	if (argc >=4 && argv[3] != NULL) {
 	  delta = fopen(argv[3], "wb");
@@ -119,7 +123,8 @@ int main(int argc, char **argv)
 	free(dmmap);
 	free(opt); free(opt0); free(opt1);
 	free(cmds); free(cmds0); free(cmds1);
-	free(s); free(s0); free(s1);
+	free(s0); free(s1);
+	free(ss0); free(ss1); 
 	
 	return 0;
 }
@@ -197,58 +202,7 @@ int findk(int current, int *rm)
 	return k;
 } 
 
-void diff()
-{
-  // opt[0]=0
-  int i;
-  int lastcopy=1; // -1: init, 0: add, 1: copy
-  
-  // when considering opt[i], we know opt[0]..opt[i-1]. 
-  // opt[i-1] is the overhead constructing bytes [0,...,i-2]
-  // opt[i]   is the overhead constructing bytes [0,...,i-1]
-  for (i=1; i<=nsize; i++) {
-  	int rm=0;
-  	int k = findk(i-1, &rm);
-	//tmp
-	
-	if (k>i-1) { // no common segments, add
-  		opt[i] = opt[i-1]+1;
-  		if (lastcopy) opt[i] += alpha;
-  		lastcopy=0;
-  		printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
-		cmds[i].type = 0;
-		cmds[i].length = 1;
-		cmds[i].inew = i-1;
-		s[i] = i-1;
-  	} else { // common segments found, copy or add
-  		int copyoverhead=opt[k]+beta; // [0..k-1]'s overhead is opt[k] and [k..i-1] is copied
-  		int addoverhead=opt[i-1]+1;
-  		if (lastcopy) addoverhead += alpha;
-  		
-  		if (copyoverhead<addoverhead) { // or <=, use copy
-		  opt[i] = copyoverhead;
-  		  lastcopy=1;	
-  		  printf("copy bytes New[%d,%d] from Old[%d..], opt[%d]=%d\n", k, i-1, rm, i, opt[i]);
-		  cmds[i].type = 1;
-		  cmds[i].length = i-k;
-		  cmds[i].inew = k;
-		  cmds[i].iold = rm;
-		  s[i] = k; // k is the first index of CS
-  		}
-  		else { // use add
-  			opt[i] = addoverhead;
-  			lastcopy=0;
-  			printf("add byte %d, opt[%d]=%d\n", i-1, i, opt[i]);
-			cmds[i].type = 0;
-		    cmds[i].length = 1;
-		    cmds[i].inew = i-1;
-			s[i] = i-1;
-  		}
-  	}
-  }	
-}
-
-int diff2()
+int diff()
 {
   // opt[0]=0
   int i;
@@ -260,14 +214,11 @@ int diff2()
   for (i=1; i<=nsize; i++) {
   	int rm=0;
   	int k = findk(i-1, &rm);
-	s[i] = i-1;
 	
-	if (i==1387) {
-		s[i] = i-1;
-	}
+	ss0[i] = ss1[i] = i-1;
 	
 	if (lastcmd == -1) {
-	  s0[i] = s1[i] = 0; // no last cmd actually
+	  ss0[i] = ss1[i] = 0; // no last cmd actually
 	  opt0[i] = alpha+1;
 	  cmds0[i].type = 0; cmds0[i].length = 1; cmds0[i].inew = i-1;
 	  if (k>i-1) { // cannot copy
@@ -277,7 +228,7 @@ int diff2()
 	  } else { // can copy
 		opt1[i] = beta;
 		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
-		s[i]=k;
+		ss1[i]=k;
 	    lastcmd=1;
 	  }
 	}
@@ -293,7 +244,7 @@ int diff2()
 	  } else { // can copy
 		opt1[i] = opt0[i-1]+beta;
 		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
-		s[i]=k;
+		ss1[i]=k;
 		lastcmd=1;
 	  }
 	}
@@ -334,7 +285,7 @@ int diff2()
 		  s1[i] = 0;
 		}
 		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
-		s[i]=k;
+		ss1[i]=k;
 		lastcmd=1;
 	  }
 	}
@@ -350,43 +301,22 @@ int diff2()
   }
 }
 
-void printcmds(int i)
-{
-  if (i<=0) {
-	return;
-  }
-  printcmds(s[i]);
-  // print cmds[i]
-  switch (cmds[i].type) {
-    case 0:
-	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds[i].length, cmds[i].inew, i, opt[i]);
-	  break;
-    case 1:	
-	  printf("COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
-	               cmds[i].length,
-	               cmds[i].inew, cmds[i].inew+cmds[i].length-1,
-				   cmds[i].iold, cmds[i].iold+cmds[i].length-1,
-				   i, opt[i]);
-	  break;
-    default:
-	  break;
-  }
-}
-
 int alen=0;
 int alendx=0;
 int dx=0;
-void printcmds2(int t, int i)
+
+void printcmds(int t, int i)
 {
-  if (i<=0) return;
+  if (i<=0) 
+	return;
   if (t==0) {
 	// cmds0
 	//printcmds2(s0[i], s[i]);
-	printcmds2(s0[s[i]+1], s[i]);
+	printcmds(s0[ss0[i]+1], ss0[i]);
 	switch (cmds0[i].type) {
     case 0:
 	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, i, opt0[i]);
-	  if (i==1 || s0[s[i]+1]==1) { // start or last cmd is copy
+	  if (i==1 || s0[ss0[i]+1]==1) { // start or last cmd is copy
 		//fwrite(&cmds0[i].type, 1, 1, delta);
 		//fwrite(&cmds0[i].length, 2, 1, delta);
 		dmmap[dx] = cmds0[i].type;
@@ -419,7 +349,7 @@ void printcmds2(int t, int i)
 	  if (alendx>0) {
 		  memcpy(&dmmap[alendx], &alen, 2);
 		  alen = 0;
-	  }
+	  }	
 	  break;
     default:
 	  break;
@@ -428,11 +358,12 @@ void printcmds2(int t, int i)
   else {
 	// cmds1
 	//printcmds2(s1[i], s[i]);
-	printcmds2(s1[s[i]+1], s[i]);
+	//printcmds2(s1[s[i]+1], s[i]);
+	printcmds(s1[ss1[i]+1], ss1[i]);
 	switch (cmds1[i].type) {
     case 0:
 	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, i, opt1[i]);
-	  if (i==1 || s1[s[i]+1]==1) { // start or last cmd is copy
+	  if (i==1 || s1[ss1[i]+1]==1) { // start or last cmd is copy
 		//fwrite(&cmds0[i].type, 1, 1, delta);
 		//fwrite(&cmds0[i].length, 2, 1, delta);
 		dmmap[dx] = cmds1[i].type;
