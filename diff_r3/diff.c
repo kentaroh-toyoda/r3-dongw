@@ -30,6 +30,7 @@ void freefootprintentry(htentry_t *e);
 int findk(int current, int *rm);
 int diff();
 void printcmds(int t, int i);
+int memaddr(int fileaddr);
 //////////////////////////////////////////////////
 
 htentry_t *hthead[q]; 
@@ -125,6 +126,8 @@ int main(int argc, char **argv)
 	  fclose(delta);
 	}
 	
+	//printf("%x\n", memaddr(0x0a78));
+	
 	freefootprint();
 	free(ommap);
 	free(nmmap);
@@ -133,6 +136,8 @@ int main(int argc, char **argv)
 	free(cmds); free(cmds0); free(cmds1);
 	free(s0); free(s1);
 	free(ss0); free(ss1); 
+	
+	
 	
 	return 0;
 }
@@ -323,7 +328,7 @@ void printcmds(int t, int i)
 	printcmds(s0[ss0[i]+1], ss0[i]);
 	switch (cmds0[i].type) {
     case 0:
-	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, i, opt0[i]);
+	  printf("ADD[%d] New[%d] at Mem[%4x] opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, memaddr(cmds0[i].inew), i, opt0[i]);
 	  if (i==1 || s0[ss0[i]+1]==1) { // start or last cmd is copy
 		//fwrite(&cmds0[i].type, 1, 1, delta);
 		//fwrite(&cmds0[i].length, 2, 1, delta);
@@ -370,7 +375,7 @@ void printcmds(int t, int i)
 	printcmds(s1[ss1[i]+1], ss1[i]);
 	switch (cmds1[i].type) {
     case 0:
-	  printf("ADD[%d] New[%d]: opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, i, opt1[i]);
+	  printf("ADD[%d] New[%d] at Mem[%4x] opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, memaddr(cmds1[i].inew), i, opt1[i]);
 	  if (i==1 || s1[ss1[i]+1]==1) { // start or last cmd is copy
 		//fwrite(&cmds0[i].type, 1, 1, delta);
 		//fwrite(&cmds0[i].length, 2, 1, delta);
@@ -406,4 +411,32 @@ void printcmds(int t, int i)
 	  break;
     }
   }
+}
+
+// convert to file address to memory address
+int memaddr(int fileaddr)
+{
+  int i;
+  int sections=0;
+  for (i=0; i<=fileaddr; ) {
+    int membase;
+	int size;
+	memcpy(&membase, &nmmap[i], 4);
+	memcpy(&size, &nmmap[i+4], 4);
+	sections++;
+	
+	//printf("base=%x, size=%d, fileaddr=%d\n", membase, size, fileaddr);
+	
+	if (i<=fileaddr && fileaddr<i+8) {
+		return -1; // metadata, not in memory
+	}
+	else if (i+8<=fileaddr && fileaddr<i+8+size) {
+		
+		return membase+fileaddr-i-8;
+	}
+	else {
+	  i += 8+size; // section start
+	}
+  }
+  return -1;  
 }
