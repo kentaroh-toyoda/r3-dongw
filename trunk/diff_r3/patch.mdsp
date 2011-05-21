@@ -1,12 +1,12 @@
 [Project]
-name=diff
+name=patch
 type=0
 defaultConfig=0
 
 [Debug]
 // compiler 
 workingDirectory=Debug
-arguments=main1.raw main2.raw delta.raw
+arguments=main1.raw delta.raw main3.raw
 intermediateFilesDirectory=Debug
 outputFilesDirectory=Debug
 compilerPreprocessor=
@@ -26,7 +26,7 @@ optimizeLevel=0
 
 // linker
 libraryPath=
-outputFilename=Debug\diff.exe
+outputFilename=Debug\cons.exe
 libraries=
 extraLinkerOptions=
 ignoreStartupFile=0
@@ -64,7 +64,7 @@ optimizeLevel=2
 
 // linker
 libraryPath=
-outputFilename=Release\diff.exe
+outputFilename=Release\patch.exe
 libraries=
 extraLinkerOptions=
 ignoreStartupFile=0
@@ -80,9 +80,9 @@ resourceIncludeDirectory=
 extraResourceOptions=
 
 [Source]
-1=diff.c
+1=patch.c
 [Header]
 [Resource]
 [Other]
 [History]
-diff.c,6211
+patch.c,1224
