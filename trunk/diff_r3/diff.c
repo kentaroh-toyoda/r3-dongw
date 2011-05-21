@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define alpha 3
 #define beta  7
@@ -55,6 +56,9 @@ int *ss1;
 
 int main(int argc, char **argv)
 {
+	int r;
+	clock_t start, finish;
+	
 	ofile = fopen(argv[1], "rb");
 	if (ofile == NULL) return -1;
 	
@@ -107,9 +111,13 @@ int main(int argc, char **argv)
 	ss1 = (int*)malloc((nsize+1)*sizeof(int));
 	ss1[0] = 0;
 	
+	start = clock();
 	generatefootprint();
+	r = diff();
+	finish = clock();
+	printcmds(r, nsize);
 	
-	printcmds(diff(), nsize);
+	printf("%f seconds.\n", (double)(finish-start)/CLOCKS_PER_SEC);
 	
 	if (argc >=4 && argv[3] != NULL) {
 	  delta = fopen(argv[3], "wb");
