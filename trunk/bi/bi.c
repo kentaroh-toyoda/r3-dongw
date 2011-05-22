@@ -37,9 +37,59 @@ rela_info_t* last_rela = &rela_header;
 
 int ucount = 0;
 
+////////////////////////////////////
+// °Ñmain.exeÖÐrela.textºÍrela.data·ÅÔÚÒ»¸öµ¥¶ÀµÄsectionÖÐ
+// extract out rela.ihex and then modify main.exe correspondingly
+int in, out, rel, crel; FILE* reltxt, *creltxt;
+struct elf32_ehdr ehdr;
+struct elf32_shdr shdr;
+	
+char *shstrtab, *strtab;
+	
+struct elf32_rela rela;
+struct elf32_sym symbol;
+	
+int text_off = 0, text_size = 0;
+int data_off = 0, data_size = 0;
+int bss_off = 0, bss_size = 0;
+int symtab_off = 0, symtab_size = 0;
+int strtab_off = 0, strtab_size = 0;
+	
+int vec_off = 0, vec_size = 0;
+int vec_addr = 0;
+int vecndx = 0;
+	
+int rela_off = 0, rela_size = 0; int rela_sec = -1;
+int rela_data_off = 0, rela_data_size = 0;	int rela_data_sec = -1;
+int rela_voff = 0, rela_vsize = 0; int rela_vsec = -1;
+	
+int textndx = -1, datandx = -1, bssndx = -1;
+	
+int text_addr = 0;
+int data_addr = 0;
+int bss_addr = 0;
+
 inline char* getstring(int name, char* strtab) 
 {
 	return (char*)(strtab+name);
+}
+
+int findsymbol(int addr) // addr is the memory address
+{
+	int i;
+	struct elf32_sym symbol;
+	
+	for (i=0; i<symtab_size; i+=sizeof(struct elf32_sym))
+	{
+		lseek(in, symtab_off+i, SEEK_SET);
+		read(in, &symbol, sizeof(symbol));
+		
+		if (symbol.st_value == addr) {
+		  if (ELF32_ST_TYPE(symbol.st_info) == STT_SECTION) continue;
+		  else return symbol.st_name;
+		}
+	}
+	return 0;
 }
 
 void store_rela(unsigned short elf_offset, reloc_t entry)
@@ -85,9 +135,13 @@ void print_rela()
   printf("print relas\n");
   for (ptr=rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
     rela_info_t *pp;
-    printf("%04X: ", ptr->entry.r_addr);
+    
+	// ×¢Òâr_offsetÊÇmemory addressµÄµØ·½ÐèÒªÐÞ¸Ä£¬r_addrÊÇÒª¸Ä³ÉÊ²Ã´Öµ(Ä¿±ê)
+	printf("Following addrs should be fixed to %s at %04X: \n", 
+	        getstring(findsymbol(ptr->entry.r_addr), strtab), ptr->entry.r_addr);
+	
     for (pp=ptr; pp != NULL; pp=pp->hnext) {
-      printf(" (%04X %04X)", pp->cr, pp->entry.r_offset);
+      printf(" (%04X %04X)", pp->entry.r_offset, pp->cr);
     }
     ucount++;
     printf("\n");
@@ -115,78 +169,47 @@ void free_rela(rela_info_t *ptr)
   free_rela(ptr->vnext);
 }
 
+
+
 int main(int argc, char **argv) 
 {
-	// °Ñmain.exeÖÐrela.textºÍrela.data·ÅÔÚÒ»¸öµ¥¶ÀµÄsectionÖÐ
-	// extract out rela.ihex and then modify main.exe correspondingly
-	
-	int in, out, rel, crel; FILE* reltxt, *creltxt;
-	struct elf32_ehdr ehdr;
-	struct elf32_shdr shdr;
-	
-	char *shstrtab, *strtab;
-	
-	struct elf32_rela rela;
-	struct elf32_sym symbol;
-	
 	int offset;
-	int i;
-	
-	int text_off = 0, text_size = 0;
-	int data_off = 0, data_size = 0;
-	int bss_off = 0, bss_size = 0;
-	int symtab_off = 0, symtab_size = 0;
-	int strtab_off = 0, strtab_size = 0;
-	
-	int vec_off = 0, vec_size = 0;
-	int vec_addr = 0;
-	int vecndx = 0;
-	
-	int rela_off = 0, rela_size = 0; int rela_sec = -1;
-	int rela_data_off = 0, rela_data_size = 0;	int rela_data_sec = -1;
-	int rela_voff = 0, rela_vsize = 0; int rela_vsec = -1;
-	
-	int textndx = -1, datandx = -1, bssndx = -1;
-	
-	
-	int text_addr = 0;
-	int data_addr = 0;
-	int bss_addr = 0;
-	
+    int i;
 	reloc_t myloc;
 
-        //argv[1] is the dir
-        char *dir = argv[1];
+	//argv[1] is the dir
+    char *dir = argv[1];
 
-        char cmd[300];
+	char cmd[300];
 
-        printf("The rc's working directory is %s\n", dir);
+	printf("The working directory of bi (binary instrumentation) is %s\n", dir);
 
-        sprintf(cmd, "cp %s/build/telosb/main.exe %s/build/telosb/out.exe", dir, dir);        
-        system(cmd);
+	sprintf(cmd, "cp %s/build/telosb/main.exe %s/build/telosb/out.exe", dir, dir);        
+	system(cmd);
 
-        sprintf(cmd, "rm -f %s/build/telosb/rela.raw", dir);
+	sprintf(cmd, "rm -f %s/build/telosb/rela.raw", dir);
 	system(cmd);
 	
-        sprintf(cmd, "%s/build/telosb/main.exe", dir);
+	sprintf(cmd, "%s/build/telosb/main.exe", dir);
 	in = open(cmd, O_RDWR);
 
-        sprintf(cmd, "%s/build/telosb/out.exe", dir);
+	sprintf(cmd, "%s/build/telosb/out.exe", dir);
 	out = open(cmd, O_RDWR);
 	
-        sprintf(cmd, "%s/build/telosb/rela.raw", dir);
-        rel = open(cmd, O_RDWR|O_CREAT);
-          // the chained reference version
-          sprintf(cmd, "%s/build/telosb/crela.raw", dir);
-          crel = open(cmd, O_RDWR|O_CREAT);
+	sprintf(cmd, "%s/build/telosb/rela.raw", dir);
+	rel = open(cmd, O_RDWR|O_CREAT);
 	
-        sprintf(cmd, "%s/build/telosb/rela.txt", dir);
-        reltxt = fopen(cmd, "w+");
-          // the chained reference version
-          sprintf(cmd, "%s/build/telosb/crela.txt", dir);
-          creltxt = fopen(cmd, "w+");
+	// the chained reference version
+	sprintf(cmd, "%s/build/telosb/crela.raw", dir);
+	crel = open(cmd, O_RDWR|O_CREAT);
+	
+	sprintf(cmd, "%s/build/telosb/rela.txt", dir);
+	reltxt = fopen(cmd, "w+");
+	
+	// the chained reference version
+	sprintf(cmd, "%s/build/telosb/crela.txt", dir);
+	creltxt = fopen(cmd, "w+");
        
-
 	if (in <0) {
 		printf("failed to open build/telosb/main.exe\n");
 		return -1;
@@ -196,7 +219,7 @@ int main(int argc, char **argv)
 	read(in, &ehdr, sizeof(ehdr));
 	if (memcmp(ehdr.e_ident, elf_magic_header, 7) != 0 /*|| ehdr.e_type != ET_REL*/)
 	{
-		printf("incorrect elf\n");
+		printf("incorrect elf header in main.exe\n");
 		return -1;	
 	}
 	offset = ehdr.e_shoff + ehdr.e_shstrndx*ehdr.e_shentsize;
@@ -303,11 +326,11 @@ int main(int argc, char **argv)
 	lseek(in, strtab_off, SEEK_SET);
 	read(in, strtab, strtab_size);
 	
-	printf("rela size: %d(.rela.text)+%d(.rela.data)+%d(.rela.vectors)=%d\n", rela_size/sizeof(rela), 
-	                                   rela_data_size/sizeof(rela),
-	                                   rela_vsize/sizeof(rela),
-	                                   (rela_size+rela_data_size+rela_vsize)/sizeof(rela));
-	
+	printf("Number of relocation entries: %d(.rela.text)+%d(.rela.data)+%d(.rela.vectors)=%d\n", 
+	                                      rela_size/sizeof(rela), 
+	                                      rela_data_size/sizeof(rela),
+										  rela_vsize/sizeof(rela),
+	                                      (rela_size+rela_data_size+rela_vsize)/sizeof(rela));
 	
 /////////////////////////////////////////////for rela.text////////////////////////////////////////////
 	for (i=0; i<rela_size; i+=sizeof(rela))
@@ -319,6 +342,7 @@ int main(int argc, char **argv)
 		lseek(in, rela_off+i, SEEK_SET);
 		read(in, &rela, sizeof(rela));
 		
+		// ¸Ãrelocation entry¶ÔÓ¦ÄÄ¸ösymbol
 		offset = symtab_off + sizeof(struct elf32_sym)*ELF32_R_SYM(rela.r_info);
 		lseek(in, offset, SEEK_SET);
 		read(in, &symbol, sizeof(symbol));
@@ -331,13 +355,13 @@ int main(int argc, char **argv)
 		//else if (symbol.st_shndx == SHN_COMMON) {} // the section which the symbol resides in not allocated yet!!!
 		//else if (symbol.st_shndx == SHN_UNDEF) {}
 		
-		if (rela_sec == textndx) offset = text_off - text_addr;
+		if (rela_sec == textndx) offset = text_off - text_addr; // off: ÎÄ¼þÆ«ÒÆ, addr: memory address
 		else if (rela_sec == datandx) offset = data_off - data_addr;
 		else if (rela_sec == bssndx) offset = bss_off - bss_addr;
 		else if (rela_sec == vecndx) offset = vec_off - vec_addr;
 		
 		// for exe, rela.r_offset is the virtual address that needs to be modified
-		offset += rela.r_offset;
+		offset += rela.r_offset; // convert memory address to file address
 		
 		instr[0] = (unsigned char)addr;
 		instr[1] = (unsigned char)(addr >> 8);
@@ -345,33 +369,39 @@ int main(int argc, char **argv)
 		lseek(in, offset, SEEK_SET);
 		read(in, realb, 2);
 		
+		if (!symbol.st_name) {
+			// see if we can find one
+			symbol.st_name = findsymbol( (realb[1]<<8)+realb[0]);
+		}
 		// note that realb[1]realb[0] is the right address, we need to fix the symbol.st_value
-		printf("%s: %02X %02X = %x [%x]\n", 
-		       getstring(symbol.st_name, strtab), realb[1], realb[0], symbol.st_value+rela.r_addend,
-		       rela.r_offset);
+		printf("[%d]%s: %02x%02x (from code) = %x (%x+ from symbol) Mem[%x]\n", 
+		       symbol.st_name, 
+		       getstring(symbol.st_name, strtab), realb[1], realb[0], 
+			   symbol.st_value+rela.r_addend, symbol.st_value, 
+		       rela.r_offset); 
+	    // fixbug: ¿ÉÄÜÊÇGCCµÄÎÊÌâ£, symbol address²»Ì«¶Ô£¬¼´Ê¹ÓÃreadelfÒ²ºÃÏñÓÐÎÊÌâ¡£
+		// ¿ÉÒÔÍ¨¹ýrealb½øÐÐ·´Ïò²éÕÒ£¬ÕÒµ½ÏàÓ¦µÄsymbol
 		
 		
 		//printf("OFFSET1: %d\n", offset);
 		
+		// (1) write to elf file: simply set it to zero
 		lseek(out, offset, SEEK_SET);
-		// set it to zero
 		instr[0] = instr[1] = 0;
 		write(out, instr, 2);
 		
+		// (2) write to rel
 		// ÐèÒªÐÞÕýµÄµØÖ· address in the file or the virtual address (i.e. load address)
 		// we use the virtual address first
-		myloc.r_offset = rela.r_offset; 
+		myloc.r_offset = rela.r_offset; // ÔÚÄÄÐèÒªÐÞ¸Ä
 		
 		lseek(in, offset, SEEK_SET);
-		read(in, &myloc.r_addr, 2);
-		
-		
+		read(in, &myloc.r_addr, 2); // ÐÞ¸Ä³ÉÊ²Ã´Öµ
 		
 		write(rel, &myloc, sizeof(myloc));
-                fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
-                
-                store_rela(offset, myloc);                
- 
+		
+        fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
+        store_rela(offset, myloc);                
 	}
 	
 /////////////////////////////////////////////for rela.data////////////////////////////////////////////	
@@ -411,27 +441,27 @@ int main(int argc, char **argv)
 		read(in, realb, 2);
 		
 		// note that realb[1]realb[0] is the right address, we need to fix the symbol.st_value
-		printf("%s: %02X %02X = %x [%x]\n", 
+		printf("%s (in .data): %02X %02X = %x Mem[%x]\n", 
 		       getstring(symbol.st_name, strtab), realb[1], realb[0], symbol.st_value+rela.r_addend,
 		       rela.r_offset);
 		
 		//printf("OFFSET2: %d\n", offset);
 		
+		// (1) Write to elf:  set it to zero
 		lseek(out, offset, SEEK_SET);
-		// set it to zero
 		instr[0] = instr[1] = 0;
 		write(out, instr, 2);
 		
+		// (2) Write to rel
 		myloc.r_offset = offset; 
 		lseek(in, offset, SEEK_SET);
 		read(in, &myloc.r_addr, 2);
 		
 		write(rel, &myloc, sizeof(myloc));
-                fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
-
-                store_rela(offset, myloc);
+		
+		fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
+        store_rela(offset, myloc);
 	}
-	
 	
 /////////////////////////////////////////////for rela.vectors////////////////////////////////////////////	
 	for (i=0; i<rela_vsize; i+=sizeof(rela))
@@ -470,34 +500,36 @@ int main(int argc, char **argv)
 		read(in, realb, 2);
 		
 		// note that realb[1]realb[0] is the right address, we need to fix the symbol.st_value
-		printf("%s: %02X %02X = %x [%x]\n", 
+		printf("%s (in .vectors): %02X %02X = %x Mem[%x]\n", 
 		       getstring(symbol.st_name, strtab), realb[1], realb[0], symbol.st_value+rela.r_addend,
 		       rela.r_offset);
 		
 		//printf("OFFSET3: %d\n", offset);
 		
+		// (1) Write to elf: set it to zero
 		lseek(out, offset, SEEK_SET);
-		// set it to zero
 		instr[0] = instr[1] = 0;
 		write(out, instr, 2);
 		
+		// (2) Write to rel
 		myloc.r_offset = offset; 
 		lseek(in, offset, SEEK_SET);
 		read(in, &myloc.r_addr, 2);
 		
 		write(rel, &myloc, sizeof(myloc));
-                fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
-
-                store_rela(offset, myloc);
+		
+		fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
+        store_rela(offset, myloc);
 	}
-	
-//       perform_chain_ref(out);
-//      write into exe/elf file
-        rela_info_t * ptr;
-        
-		if (chained) {
 
-         for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
+	
+//  perform_chain_ref(out);
+//  write into exe/elf file
+	
+	rela_info_t * ptr;
+        
+	if (chained) {
+		for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
           rela_info_t *pp;
           for (pp=ptr; pp != NULL; pp=pp->hnext) {
             unsigned char instr[2];
@@ -505,22 +537,26 @@ int main(int argc, char **argv)
             lseek(out, pp->elf_offset, SEEK_SET);
             write(out, instr, 2);
           }
-         } 
-		}
+		} 
+	}
         
-		// write the relocation entry table
-        for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
-           write(crel, &ptr->entry, sizeof(reloc_t));
-           fprintf(creltxt, "%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
-        }
+	// write the relocation entry table
+    for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
+      write(crel, &ptr->entry, sizeof(reloc_t));
+      fprintf(creltxt, "%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
+    }
 	
+    print_rela();
+	//printf("test: %s\n", getstring(findsymbol(0x1100), strtab));
+
 	close(in);
 	close(out);
-	close(rel);     close(crel);
-        fclose(reltxt); fclose(creltxt);
+	close(rel);     
+	close(crel);
+	
+	fclose(reltxt); 
+	fclose(creltxt);
        
-
-        //print_rela();
-        free_rela(rela_header.vnext);
+    free_rela(rela_header.vnext);
 	return 0;
 }
