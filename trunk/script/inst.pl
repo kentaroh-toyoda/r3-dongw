@@ -8,12 +8,20 @@ $efile = $ARGV[1]; # exe
 open afd, "<$afile" or die "cannot open $afile\n";
 while (<afd>) {
 	chomp;
+	## Mem[addr]
 	my @rs = split /[ \[\]]+/;
 	#$rs[6]\n";
-	if ($rs[0] =~ /ADD/) {
-		my $a = hex("$rs[6]");
-		push @addrs, $a;
+	my $i=0;
+	for ($i=0; $i<@rs; $i++) {
+		if ($rs[$i] eq "Mem") {
+			last;
+		}
 	}
+	my $a=0xffff;
+	if ($i<@rs) {
+	  $a = hex("$rs[$i+1]");
+  }
+	push @addrs, $a;
 }
 close afd;
 
@@ -137,20 +145,34 @@ sub findinst {
   return "noinst";
 }
 
-
-
-
 #################################################
 
 #&printfunctions();
 #&printinstructions();
+
+%fmap=();
+%imap=();
 
 for (my $i=0; $i<@addrs; $i++) {
 	if ($addrs[$i]<65536) {
 	  #print "$addrs[$i] ";
 	  my $fn = &findfunc($addrs[$i]);
 	  my $in = &findinst($addrs[$i]);
-	  print "$addrs[$i] is located in ($fn,$in)\n";
+	  #print "$addrs[$i] is located in ($fn,$in)\n";
+	  $fmap{$fn}++;
+	  $imap{$in}++;
   }
 }
 #exit;
+
+while (($k, $v) = each(%fmap)) {
+	if ($v>=1) {
+	  print "$k $v\n";
+  }
+}
+
+while (($k, $v) = each(%imap)) {
+	if ($v>=1) {
+		print "$k $v\n";
+	}
+}
