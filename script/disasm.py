@@ -133,6 +133,9 @@ def disassemble(map):
         if mnemonic.get(word & 0xffc0) != None :
             InstructionSet = mnemonic[word & 0xffc0]["nm"]
             ophash = mnemonic[word & 0xffc0]
+        elif mnemonic.get(word & 0xfc00) != None:
+            InstructionSet = mnemonic[word & 0xfc00]["nm"]
+            ophash = mnemonic[word & 0xfc00]
         elif mnemonic.get(word & 0xf000) != None :
             InstructionSet = mnemonic[word & 0xf000]["nm"]
             ophash = mnemonic[word & 0xf000]
@@ -141,7 +144,7 @@ def disassemble(map):
 
         reginame = getRegister((word & 0x0f00) >> 8)
         if reginame == 'GC1':
-            if word & 0x0030 == 0x0010:
+            if word & 0x0030 == 0x0010: ## see As
                 reginame = '(0)'
             elif word & 0x0030 == 0x0020:
                 reginame = '4'
@@ -240,7 +243,11 @@ def disassemble(map):
                 Dest = getSrcStr(destList, 'UNKNOWN_REG', hex(indxval))
 
         elif ophash["op"] == "jump" :
-            PCoffset =  hex((word & 0x00ff) * 2)
+            #PCoffset =  hex((word & 0x00ff) * 2)
+            if word & 0x0200 == 0x0200:
+                PCoffset = hex((~(word & 0x03ff)&0x03ff)*-2)
+            else:
+                PCoffset = hex((word & 0x03ff)*2+2)
 
         strrawdata = ""
         for x in readrawdata:
