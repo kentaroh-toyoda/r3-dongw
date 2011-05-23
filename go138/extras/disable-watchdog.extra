@@ -1,0 +1,3 @@
+# vim:syntax=make
+
+PFLAGS +=   -DDISABLE_WATCHDOG
