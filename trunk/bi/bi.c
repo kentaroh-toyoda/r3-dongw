@@ -16,6 +16,9 @@
 #define S_IRWXO (S_IRWXG >> 3)
 #endif
 
+#define setbit(byte, offset)    byte |= 0x1<<(offset&0x7)
+#define clearbit(byte, offset)  byte &= ~(0x1<<(offset&0x7))
+
 // we should form a chained reference to reduce the # if relocation entries
 int chained=0;
 
@@ -43,6 +46,8 @@ int ucount = 0;
 int in, out, rel, crel; FILE* reltxt, *creltxt;
 struct elf32_ehdr ehdr;
 struct elf32_shdr shdr;
+
+int raw, bm;
 	
 char *shstrtab, *strtab;
 	
@@ -149,6 +154,73 @@ void print_rela()
   printf("ucount = %d\n", ucount);
 }
 
+// determine if waddr needs relocation?
+int needreloc(int waddr)
+{
+	rela_info_t *ptr;
+	for (ptr=rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
+      rela_info_t *pp;
+    
+	  // 注意r_offset是memory address的地方需要修改，r_addr是要改成什么值(目标)
+	  //printf("Following addrs should be fixed to %s at %04X: \n", 
+	  //      getstring(findsymbol(ptr->entry.r_addr), strtab), ptr->entry.r_addr);
+	
+      for (pp=ptr; pp != NULL; pp=pp->hnext) {
+        //printf(" (%04X %04X)", pp->entry.r_offset, pp->cr);
+		if (pp->entry.r_offset == waddr) {
+		  return 1; // need relocation
+		}
+      }
+      ucount++;
+    }
+	return 0;
+}
+
+// generate the bitmap given main.raw
+void genbitmap()
+{
+	int address;
+	int size;
+	int i;
+	int offset_in_byte=0;
+	unsigned char byte=0;
+	
+	// address(4bytes in raw), size (4bytes in raw), content
+	// end of file: 8 zero bytes
+	while (1) {
+		read(raw, &address, 4); // address
+		read(raw, &size, 4); // size
+		
+		write(bm, &address, 4);
+		write(bm, &size, 4);
+		byte = 0;
+		offset_in_byte = 0;
+		
+		for (i=address; i<address+size; i+=2) {
+			if (needreloc(i)) {
+			  // set at offset_in_byte in byte
+			  setbit(byte, offset_in_byte);
+			} else {
+			  clearbit(byte, offset_in_byte);
+			}
+			offset_in_byte++;
+			
+			if (offset_in_byte == 8) {
+				// write to file
+				write(bm, &byte, 1);
+				byte=0;
+				offset_in_byte = 0;
+			}
+		}
+		lseek(raw, size, SEEK_CUR);
+		
+		
+		if (address==0 && size==0) {
+			break; // its the end of file
+		}
+	}
+}
+
 void free_rela_hline(rela_info_t *ptr)
 {
   if (ptr->hnext == NULL) {
@@ -209,6 +281,13 @@ int main(int argc, char **argv)
 	// the chained reference version
 	sprintf(cmd, "%s/build/telosb/crela.txt", dir);
 	creltxt = fopen(cmd, "w+");
+	
+	// the bitmap indicating relocation: assume the existance of main.raw
+	sprintf(cmd, "%s/build/telosb/main.raw", dir);
+	raw = open(cmd, O_RDWR);
+	
+	sprintf(cmd, "%s/build/telosb/bm.raw", dir);
+	bm = open(cmd, O_RDWR|O_CREAT); 
        
 	if (in <0) {
 		printf("failed to open build/telosb/main.exe\n");
@@ -548,11 +627,15 @@ int main(int argc, char **argv)
 	
     print_rela();
 	//printf("test: %s\n", getstring(findsymbol(0x1100), strtab));
+	
+	genbitmap();
 
 	close(in);
 	close(out);
 	close(rel);     
 	close(crel);
+	
+	close(bm);
 	
 	fclose(reltxt); 
 	fclose(creltxt);

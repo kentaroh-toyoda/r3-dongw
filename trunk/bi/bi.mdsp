@@ -5,8 +5,8 @@ defaultConfig=0
 
 [Debug]
 // compiler 
-workingDirectory=
-arguments=
+workingDirectory=../Blink-base
+arguments=../Blink-base
 intermediateFilesDirectory=Debug
 outputFilesDirectory=Debug
 compilerPreprocessor=
@@ -86,4 +86,4 @@ extraResourceOptions=
 [Resource]
 [Other]
 [History]
-bi.c,10273
+bi.c,15275
