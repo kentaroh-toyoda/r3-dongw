@@ -48,6 +48,8 @@ struct elf32_ehdr ehdr;
 struct elf32_shdr shdr;
 
 int raw, bm;
+FILE *oldsymtxt, *newsymtxt;
+int symraw;
 	
 char *shstrtab, *strtab;
 	
@@ -74,12 +76,15 @@ int text_addr = 0;
 int data_addr = 0;
 int bss_addr = 0;
 
+char str[300]; // for storing symbol name
+
 inline char* getstring(int name, char* strtab) 
 {
 	return (char*)(strtab+name);
 }
 
-int findsymbol(int addr) // addr is the memory address
+// struct elf32_sym symbol;
+struct elf32_sym findsymbol(int addr) // addr is the memory address
 {
 	int i;
 	struct elf32_sym symbol;
@@ -91,10 +96,11 @@ int findsymbol(int addr) // addr is the memory address
 		
 		if (symbol.st_value == addr) {
 		  if (ELF32_ST_TYPE(symbol.st_info) == STT_SECTION) continue;
-		  else return symbol.st_name;
+		  else return symbol;
 		}
 	}
-	return 0;
+	memset(&symbol, 0, sizeof(symbol));
+	return symbol;
 }
 
 void store_rela(unsigned short elf_offset, reloc_t entry)
@@ -143,7 +149,7 @@ void print_rela()
     
 	// ◊¢“‚r_offset «memory addressµƒµÿ∑Ω–Ë“™–ﬁ∏ƒ£¨r_addr «“™∏ƒ≥… ≤√¥÷µ(ƒø±Í)
 	printf("Following addrs should be fixed to %s at %04X: \n", 
-	        getstring(findsymbol(ptr->entry.r_addr), strtab), ptr->entry.r_addr);
+	        getstring(findsymbol(ptr->entry.r_addr).st_name, strtab), ptr->entry.r_addr);
 	
     for (pp=ptr; pp != NULL; pp=pp->hnext) {
       printf(" (%04X %04X)", pp->entry.r_offset, pp->cr);
@@ -163,7 +169,7 @@ int needreloc(int waddr)
     
 	  // ◊¢“‚r_offset «memory addressµƒµÿ∑Ω–Ë“™–ﬁ∏ƒ£¨r_addr «“™∏ƒ≥… ≤√¥÷µ(ƒø±Í)
 	  //printf("Following addrs should be fixed to %s at %04X: \n", 
-	  //      getstring(findsymbol(ptr->entry.r_addr), strtab), ptr->entry.r_addr);
+	  //      getstring(findsymbol(ptr->entry.r_addr).st_name, strtab), ptr->entry.r_addr);
 	
       for (pp=ptr; pp != NULL; pp=pp->hnext) {
         //printf(" (%04X %04X)", pp->entry.r_offset, pp->cr);
@@ -219,6 +225,16 @@ void genbitmap()
 			break; // its the end of file
 		}
 	}
+}
+
+void gensym()
+{
+	// generate sym table
+}
+
+int findslot(char *symname)
+{
+	
 }
 
 void free_rela_hline(rela_info_t *ptr)
@@ -288,6 +304,17 @@ int main(int argc, char **argv)
 	
 	sprintf(cmd, "%s/build/telosb/bm.raw", dir);
 	bm = open(cmd, O_RDWR|O_CREAT); 
+	
+	// symbols address and allocation of 'jump table'
+	/*
+	sprintf(cmd, "%s/build/telosb/oldsym.txt", dir);
+	oldsymtxt = fopen(cmd, "r");
+	
+	sprintf(cmd, "%s/build/telosb/sym.txt", dir);
+	newsymtxt = fopen(cmd, "w+"); // for checking
+	
+	sprintf(cmd, "%s/build/telosb/sym.raw", dir);
+	symraw = open(cmd, O_RDWR|O_CREAT); */
        
 	if (in <0) {
 		printf("failed to open build/telosb/main.exe\n");
@@ -410,7 +437,10 @@ int main(int argc, char **argv)
 	                                      rela_data_size/sizeof(rela),
 										  rela_vsize/sizeof(rela),
 	                                      (rela_size+rela_data_size+rela_vsize)/sizeof(rela));
-	
+	if (rela_size+rela_data_size+rela_vsize == 0) {
+		// not relocatable file
+		goto exit;
+	}
 /////////////////////////////////////////////for rela.text////////////////////////////////////////////
 	for (i=0; i<rela_size; i+=sizeof(rela))
 	{
@@ -450,12 +480,19 @@ int main(int argc, char **argv)
 		
 		if (!symbol.st_name) {
 			// see if we can find one
-			symbol.st_name = findsymbol( (realb[1]<<8)+realb[0]);
+			symbol = findsymbol( (realb[1]<<8)+realb[0]); // st_value should also be fixed
+			//fixing this also
+			rela.r_addend = (realb[1]<<8)+realb[0] - symbol.st_value;
 		}
 		// note that realb[1]realb[0] is the right address, we need to fix the symbol.st_value
-		printf("[%d]%s: %02x%02x (from code) = %x (%x+ from symbol) Mem[%x]\n", 
-		       symbol.st_name, 
-		       getstring(symbol.st_name, strtab), realb[1], realb[0], 
+		
+		if (rela.r_addend == 0) {
+			sprintf(str, "%s", getstring(symbol.st_name, strtab));
+		} else {
+			sprintf(str, "%s+%d", getstring(symbol.st_name, strtab), rela.r_addend);
+		}
+		printf("ref_sym_text <%s> %02x%02x (from code) = %x (%x+ from symbol) Mem[%x]\n", 
+		       str, realb[1], realb[0], 
 			   symbol.st_value+rela.r_addend, symbol.st_value, 
 		       rela.r_offset); 
 	    // fixbug: ø…ƒ‹ «GCCµƒŒ Ã‚£, symbol address≤ªÃ´∂‘£¨º¥ π”√readelf“≤∫√œÒ”–Œ Ã‚°£
@@ -519,9 +556,14 @@ int main(int argc, char **argv)
 		lseek(in, offset, SEEK_SET);
 		read(in, realb, 2);
 		
+		if (rela.r_addend == 0) {
+			sprintf(str, "%s", getstring(symbol.st_name, strtab));
+		} else {
+			sprintf(str, "%s+%d", getstring(symbol.st_name, strtab), rela.r_addend);
+		}
 		// note that realb[1]realb[0] is the right address, we need to fix the symbol.st_value
-		printf("%s (in .data): %02X %02X = %x Mem[%x]\n", 
-		       getstring(symbol.st_name, strtab), realb[1], realb[0], symbol.st_value+rela.r_addend,
+		printf("ref_sym_data <%s> %02X%02X = %x Mem[%x]\n", 
+		       str, realb[1], realb[0], symbol.st_value+rela.r_addend,
 		       rela.r_offset);
 		
 		//printf("OFFSET2: %d\n", offset);
@@ -578,9 +620,14 @@ int main(int argc, char **argv)
 		lseek(in, offset, SEEK_SET);
 		read(in, realb, 2);
 		
+		if (rela.r_addend == 0) {
+			sprintf(str, "%s", getstring(symbol.st_name, strtab));
+		} else {
+			sprintf(str, "%s+%d", getstring(symbol.st_name, strtab), rela.r_addend);
+		}
 		// note that realb[1]realb[0] is the right address, we need to fix the symbol.st_value
-		printf("%s (in .vectors): %02X %02X = %x Mem[%x]\n", 
-		       getstring(symbol.st_name, strtab), realb[1], realb[0], symbol.st_value+rela.r_addend,
+		printf("ref_sym_vectors <%s> %02X%02X = %x Mem[%x]\n", 
+		       str, realb[1], realb[0], symbol.st_value+rela.r_addend,
 		       rela.r_offset);
 		
 		//printf("OFFSET3: %d\n", offset);
@@ -626,10 +673,11 @@ int main(int argc, char **argv)
     }
 	
     print_rela();
-	//printf("test: %s\n", getstring(findsymbol(0x1100), strtab));
+	//printf("test: %s\n", getstring(findsymbol(0x1100).st_name, strtab));
 	
 	genbitmap();
 
+exit:
 	close(in);
 	close(out);
 	close(rel);     
