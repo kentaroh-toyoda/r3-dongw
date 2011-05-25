@@ -50,6 +50,8 @@ struct elf32_shdr shdr;
 int raw, bm;
 FILE *oldsymtxt, *newsymtxt;
 int symraw;
+
+char *dir;
 	
 char *shstrtab, *strtab;
 	
@@ -229,12 +231,45 @@ void genbitmap()
 
 void gensym()
 {
-	// generate sym table
-}
-
-int findslot(char *symname)
-{
+	char cmd[300];
+	unsigned short addr = 0;
+	rela_info_t *ptr;
+	int index=0;
 	
+	// generate sym table according to sym.txt and modify the adresses in elf file
+	sprintf(cmd, "%s/build/telosb/sym.txt", dir);
+	newsymtxt = fopen(cmd, "r"); // for checking
+	
+	if (newsymtxt == NULL) return;
+	
+    // (1) Write to sym.raw	
+	sprintf(cmd, "%s/build/telosb/sym.raw", dir);
+	symraw = open(cmd, O_RDWR|O_CREAT); 
+	
+	// (2) Write out.exe
+	index=0;
+	while (!feof(newsymtxt)) {
+		addr = 0;
+		fscanf(newsymtxt, "%s %x", cmd, &addr);
+		// write(out, instr, 2);
+		write(symraw, &addr, 2);
+		
+		for (ptr=rela_header.vnext; ptr!=NULL; ptr=ptr->vnext) {
+			struct elf32_sym symbol = findsymbol(ptr->entry.r_addr);
+			rela_info_t *pp;
+			if (strcmp(getstring(symbol.st_name, strtab), cmd) == 0) {
+				//symbol.st_other = index;
+				for (pp=ptr; pp!=NULL; pp=pp->hnext) {
+					lseek(out, pp->elf_offset, SEEK_SET);
+					write(out, &index, 2);
+				}
+			}
+		}
+		index++;
+	}
+	
+	fclose(newsymtxt);
+	close(symraw);
 }
 
 void free_rela_hline(rela_info_t *ptr)
@@ -257,18 +292,16 @@ void free_rela(rela_info_t *ptr)
   free_rela(ptr->vnext);
 }
 
-
-
 int main(int argc, char **argv) 
 {
 	int offset;
     int i;
 	reloc_t myloc;
 
-	//argv[1] is the dir
-    char *dir = argv[1];
-
 	char cmd[300];
+	
+	//argv[1] is the dir
+    dir = argv[1];
 
 	printf("The working directory of bi (binary instrumentation) is %s\n", dir);
 
@@ -309,12 +342,9 @@ int main(int argc, char **argv)
 	/*
 	sprintf(cmd, "%s/build/telosb/oldsym.txt", dir);
 	oldsymtxt = fopen(cmd, "r");
+	*/
 	
-	sprintf(cmd, "%s/build/telosb/sym.txt", dir);
-	newsymtxt = fopen(cmd, "w+"); // for checking
 	
-	sprintf(cmd, "%s/build/telosb/sym.raw", dir);
-	symraw = open(cmd, O_RDWR|O_CREAT); */
        
 	if (in <0) {
 		printf("failed to open build/telosb/main.exe\n");
