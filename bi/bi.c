@@ -23,8 +23,10 @@
 int chained=0;
 
 typedef struct reloc_t {
-	unsigned short r_offset;
+	unsigned short r_offset; 
 	unsigned short r_addr;
+	elf32_word st_name;
+	elf32_sword r_addend;
 } reloc_t;
 
 typedef struct rela_info_t {
@@ -122,7 +124,9 @@ void store_rela(unsigned short elf_offset, reloc_t entry)
    for (ptr=rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
      // the symbol address is
      unsigned short sym_addr = ptr->entry.r_addr;
-     if (newitem->entry.r_addr == sym_addr) {
+     if (newitem->entry.r_addr == sym_addr && 
+		 newitem->entry.st_name == ptr->entry.st_name &&
+		 newitem->entry.r_addend == ptr->entry.r_addend) {
        // put in h line through the hnext pointer
        rela_info_t * pp = NULL;
        find = 1;
@@ -148,10 +152,17 @@ void print_rela()
   printf("print relas\n");
   for (ptr=rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
     rela_info_t *pp;
+	char str[100];
+	
+	if (ptr->entry.r_addend==0) {
+		sprintf(str, "%s", getstring(ptr->entry.st_name, strtab));
+	} else {
+		sprintf(str, "%s+%d", getstring(ptr->entry.st_name, strtab), ptr->entry.r_addend);
+	}
     
 	// 注意r_offset是memory address的地方需要修改，r_addr是要改成什么值(目标)
 	printf("Following addrs should be fixed to %s at %04X: \n", 
-	        getstring(findsymbol(ptr->entry.r_addr).st_name, strtab), ptr->entry.r_addr);
+	        str, ptr->entry.r_addr);
 	
     for (pp=ptr; pp != NULL; pp=pp->hnext) {
       printf(" (%04X %04X)", pp->entry.r_offset, pp->cr);
@@ -234,7 +245,7 @@ void gensym()
 	char cmd[300];
 	unsigned short addr = 0;
 	rela_info_t *ptr;
-	int index=0;
+	unsigned short index=0;
 	
 	// generate sym table according to sym.txt and modify the adresses in elf file
 	sprintf(cmd, "%s/build/telosb/sym.txt", dir);
@@ -249,20 +260,36 @@ void gensym()
 	// (2) Write out.exe
 	index=0;
 	while (!feof(newsymtxt)) {
+		char line[300];
 		addr = 0;
-		fscanf(newsymtxt, "%s %x", cmd, &addr);
+		fgets(line, 300, newsymtxt);
+		sscanf(line, "%s %4x", cmd, &addr); // it's strange
+		sscanf(line, "%s", cmd);
+		//printf("%s ", cmd);
 		// write(out, instr, 2);
 		write(symraw, &addr, 2);
 		
+		cmd[strlen(cmd)-1]=0;
+		
 		for (ptr=rela_header.vnext; ptr!=NULL; ptr=ptr->vnext) {
-			struct elf32_sym symbol = findsymbol(ptr->entry.r_addr);
 			rela_info_t *pp;
-			if (strcmp(getstring(symbol.st_name, strtab), cmd) == 0) {
-				//symbol.st_other = index;
+			char str[100];
+	
+	        if (ptr->entry.r_addend==0) {
+		      sprintf(str, "%s", getstring(ptr->entry.st_name, strtab));
+	        } else {
+			  sprintf(str, "%s+%d", getstring(ptr->entry.st_name, strtab), ptr->entry.r_addend);
+	        }
+			
+			if ( ptr->entry.r_addr == addr &&
+				strcmp(&cmd[1], str) == 0) {
+				// 只要地址一样就行
 				for (pp=ptr; pp!=NULL; pp=pp->hnext) {
 					lseek(out, pp->elf_offset, SEEK_SET);
 					write(out, &index, 2);
+					printf("Write file_offset: %d to %d\n", pp->elf_offset, index);
 				}
+				break; // for the next symbol
 			}
 		}
 		index++;
@@ -509,7 +536,7 @@ int main(int argc, char **argv)
 		read(in, realb, 2);
 		
 		if (!symbol.st_name) {
-			// see if we can find one
+			// see if we can find one: 优先考虑原来的symbol
 			symbol = findsymbol( (realb[1]<<8)+realb[0]); // st_value should also be fixed
 			//fixing this also
 			rela.r_addend = (realb[1]<<8)+realb[0] - symbol.st_value;
@@ -547,6 +574,8 @@ int main(int argc, char **argv)
 		write(rel, &myloc, sizeof(myloc));
 		
         fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
+		myloc.st_name = symbol.st_name;
+		myloc.r_addend = rela.r_addend;
         store_rela(offset, myloc);                
 	}
 	
@@ -586,6 +615,13 @@ int main(int argc, char **argv)
 		lseek(in, offset, SEEK_SET);
 		read(in, realb, 2);
 		
+		if (!symbol.st_name) {
+			// see if we can find one: 优先考虑原来的symbol
+			symbol = findsymbol( (realb[1]<<8)+realb[0]); // st_value should also be fixed
+			//fixing this also
+			rela.r_addend = (realb[1]<<8)+realb[0] - symbol.st_value;
+		}
+		
 		if (rela.r_addend == 0) {
 			sprintf(str, "%s", getstring(symbol.st_name, strtab));
 		} else {
@@ -611,6 +647,10 @@ int main(int argc, char **argv)
 		write(rel, &myloc, sizeof(myloc));
 		
 		fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
+		
+		myloc.st_name = symbol.st_name;
+		myloc.r_addend = rela.r_addend;
+		
         store_rela(offset, myloc);
 	}
 	
@@ -650,6 +690,13 @@ int main(int argc, char **argv)
 		lseek(in, offset, SEEK_SET);
 		read(in, realb, 2);
 		
+		if (!symbol.st_name) {
+			// see if we can find one: 优先考虑原来的symbol
+			symbol = findsymbol( (realb[1]<<8)+realb[0]); // st_value should also be fixed
+			//fixing this also
+			rela.r_addend = (realb[1]<<8)+realb[0] - symbol.st_value;
+		}
+		
 		if (rela.r_addend == 0) {
 			sprintf(str, "%s", getstring(symbol.st_name, strtab));
 		} else {
@@ -675,6 +722,8 @@ int main(int argc, char **argv)
 		write(rel, &myloc, sizeof(myloc));
 		
 		fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
+		myloc.st_name = symbol.st_name;
+		myloc.r_addend = rela.r_addend;
         store_rela(offset, myloc);
 	}
 
@@ -706,6 +755,8 @@ int main(int argc, char **argv)
 	//printf("test: %s\n", getstring(findsymbol(0x1100).st_name, strtab));
 	
 	genbitmap();
+	// generate sym.raw also rewrite out.exe: assume the existence of sym.txt
+	gensym();
 
 exit:
 	close(in);
