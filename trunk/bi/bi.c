@@ -299,6 +299,47 @@ void gensym()
 	close(symraw);
 }
 
+// the gensym function also changes the out.exe with addresses inflated with jump table index
+// this function fix the address to the correct address
+// used for validation -- the out.exe should be the same to main.exe
+void fix()
+{
+	char cmd[300];
+	// bm.raw (need to do relocation?), sym.raw (target address), out.exe (processed file)
+	rela_info_t *ptr;
+	
+	sprintf(cmd, "%s/build/telosb/sym.raw", dir);
+	symraw = open(cmd, O_RDWR|O_CREAT); 
+	if (symraw == -1) return;
+	
+    for (ptr=rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
+      rela_info_t *pp;
+    
+	  // 注意r_offset是memory address的地方需要修改，r_addr是要改成什么值(目标)
+	  //printf("Following addrs should be fixed to %s at %04X: \n", 
+	  //      getstring(findsymbol(ptr->entry.r_addr).st_name, strtab), ptr->entry.r_addr);
+	
+      for (pp=ptr; pp != NULL; pp=pp->hnext) {
+        //printf(" (%04X %04X)", pp->entry.r_offset, pp->cr);
+		//pp->entry.r_offset
+		unsigned short index;
+		unsigned short addr;
+		
+		lseek(out, pp->elf_offset, SEEK_SET);
+		read(out, &index, 2);
+		// using index to find the target address
+		lseek(symraw, 2*index, SEEK_SET);
+		read(symraw, &addr, 2);
+		
+		lseek(out, pp->elf_offset, SEEK_SET);
+		write(out, &addr, 2);
+      }
+    } 
+	
+	close(symraw);
+}
+
+
 void free_rela_hline(rela_info_t *ptr)
 {
   if (ptr->hnext == NULL) {
@@ -756,9 +797,11 @@ int main(int argc, char **argv)
 	
 	genbitmap();
 	// generate sym.raw also rewrite out.exe: assume the existence of sym.txt
+	
 	gensym();
+	fix(); // then the out.exe should be the same to main.exe
 
-exit:
+exit:	
 	close(in);
 	close(out);
 	close(rel);     
