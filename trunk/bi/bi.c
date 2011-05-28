@@ -800,6 +800,7 @@ int main(int argc, char **argv)
         store_rela(offset, myloc);
 	}
 
+    
 	
 //  perform_chain_ref(out);
 //  write into exe/elf file
@@ -817,13 +818,19 @@ int main(int argc, char **argv)
           }
 		} 
 	}
-        
-	// write the relocation entry table
+	
+	//ptr = rela_header.vnext;
+	printf("hehe2\n");
+
+    // write the relocation entry table
     for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
-      fwrite(&ptr->entry, sizeof(reloc_t), 1, crel);
+      //fwrite(&ptr->entry, sizeof(reloc_t), 1, crel);
       fprintf(creltxt, "%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
+	  //printf("%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
     }
 	
+	printf("hehe3\n");
+
     print_rela();
 	//printf("test: %s\n", getstring(findsymbol(0x1100).st_name, strtab));
 	
@@ -832,7 +839,7 @@ int main(int argc, char **argv)
 	  // generate sym.raw also rewrite out.exe: assume the existence of sym.txt
 	
 	  gensym();
-	  fix(); // then the out.exe should be the same to main.exe
+	  //fix(); // then the out.exe should be the same to main.exe if turned on, the main.exe = out.exe
 	}
 
 exit:	
