@@ -19,8 +19,10 @@
 #define setbit(byte, offset)    byte |= 0x1<<(offset&0x7)
 #define clearbit(byte, offset)  byte &= ~(0x1<<(offset&0x7))
 
-// we should form a chained reference to reduce the # if relocation entries
-int chained=0;
+// 0: the out.exe inflated with 0
+// 1: chained
+// 2: symbol table index
+int option=0; 
 
 typedef struct reloc_t {
 	unsigned short r_offset; 
@@ -45,13 +47,15 @@ int ucount = 0;
 ////////////////////////////////////
 // 把main.exe中rela.text和rela.data放在一个单独的section中
 // extract out rela.ihex and then modify main.exe correspondingly
-int in, out, rel, crel; FILE* reltxt, *creltxt;
+FILE *in, *out, *rel, *crel; 
+FILE *reltxt, *creltxt;
+
+FILE *raw, *bm;
+FILE *oldsymtxt, *newsymtxt;
+FILE *symraw;
+
 struct elf32_ehdr ehdr;
 struct elf32_shdr shdr;
-
-int raw, bm;
-FILE *oldsymtxt, *newsymtxt;
-int symraw;
 
 char *dir;
 	
@@ -95,8 +99,8 @@ struct elf32_sym findsymbol(int addr) // addr is the memory address
 	
 	for (i=0; i<symtab_size; i+=sizeof(struct elf32_sym))
 	{
-		lseek(in, symtab_off+i, SEEK_SET);
-		read(in, &symbol, sizeof(symbol));
+		fseek(in, symtab_off+i, SEEK_SET);
+		fread(&symbol, sizeof(symbol), 1, in);
 		
 		if (symbol.st_value == addr) {
 		  if (ELF32_ST_TYPE(symbol.st_info) == STT_SECTION) continue;
@@ -207,11 +211,11 @@ void genbitmap()
 	// address(4bytes in raw), size (4bytes in raw), content
 	// end of file: 8 zero bytes
 	while (1) {
-		read(raw, &address, 4); // address
-		read(raw, &size, 4); // size
+		fread(&address, 4, 1, raw); // address
+		fread(&size, 4, 1, raw); // size
 		
-		write(bm, &address, 4);
-		write(bm, &size, 4);
+		fwrite(&address, 4, 1, bm);
+		fwrite(&size, 4, 1, bm);
 		byte = 0;
 		offset_in_byte = 0;
 		
@@ -226,12 +230,12 @@ void genbitmap()
 			
 			if (offset_in_byte == 8) {
 				// write to file
-				write(bm, &byte, 1);
+				fwrite(&byte, 1, 1, bm);
 				byte=0;
 				offset_in_byte = 0;
 			}
 		}
-		lseek(raw, size, SEEK_CUR);
+		fseek(raw, size, SEEK_CUR);
 		
 		
 		if (address==0 && size==0) {
@@ -246,28 +250,38 @@ void gensym()
 	unsigned short addr = 0;
 	rela_info_t *ptr;
 	unsigned short index=0;
+	unsigned short targetaddr=0;
 	
 	// generate sym table according to sym.txt and modify the adresses in elf file
 	sprintf(cmd, "%s/build/telosb/sym.txt", dir);
 	newsymtxt = fopen(cmd, "r"); // for checking
 	
-	if (newsymtxt == NULL) return;
+	if (newsymtxt == NULL) {
+		printf("cannot open sym.txt\n");
+		return;
+	}
 	
     // (1) Write to sym.raw	
 	sprintf(cmd, "%s/build/telosb/sym.raw", dir);
-	symraw = open(cmd, O_RDWR|O_CREAT); 
+	symraw = fopen(cmd, "wb+"); 
 	
 	// (2) Write out.exe
 	index=0;
 	while (!feof(newsymtxt)) {
 		char line[300];
 		addr = 0;
-		fgets(line, 300, newsymtxt);
+		if (fgets(line, 300, newsymtxt)!=NULL) 
+		{}
+		else
+			break;
+		
+		
 		sscanf(line, "%s %4x", cmd, &addr); // it's strange
 		sscanf(line, "%s", cmd);
 		//printf("%s ", cmd);
-		// write(out, instr, 2);
-		write(symraw, &addr, 2);
+		printf("Write %4x\n", addr);
+		//addr=0;
+		fwrite(&addr, 2, 1, symraw);
 		
 		cmd[strlen(cmd)-1]=0;
 		
@@ -285,9 +299,16 @@ void gensym()
 				strcmp(&cmd[1], str) == 0) {
 				// 只要地址一样就行
 				for (pp=ptr; pp!=NULL; pp=pp->hnext) {
-					lseek(out, pp->elf_offset, SEEK_SET);
-					write(out, &index, 2);
-					printf("Write file_offset: %d to %d\n", pp->elf_offset, index);
+					fseek(out, pp->elf_offset, SEEK_SET);
+					fread(&targetaddr, 2, 1, out);
+					
+					fseek(out, pp->elf_offset, SEEK_SET);
+					fwrite(&index, 2, 1, out);
+					
+					//if (targetaddr != addr)
+					  printf("Write file_offset(%x)-memaddr(%x) [%x]: to index %d[%x], %s\n", 
+					          pp->elf_offset, pp->entry.r_offset, targetaddr, index, addr,
+							str);
 				}
 				break; // for the next symbol
 			}
@@ -296,7 +317,7 @@ void gensym()
 	}
 	
 	fclose(newsymtxt);
-	close(symraw);
+	fclose(symraw);
 }
 
 // the gensym function also changes the out.exe with addresses inflated with jump table index
@@ -309,8 +330,8 @@ void fix()
 	rela_info_t *ptr;
 	
 	sprintf(cmd, "%s/build/telosb/sym.raw", dir);
-	symraw = open(cmd, O_RDWR|O_CREAT); 
-	if (symraw == -1) return;
+	symraw = fopen(cmd, "rb"); 
+	if (symraw == NULL) return;
 	
     for (ptr=rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
       rela_info_t *pp;
@@ -325,18 +346,18 @@ void fix()
 		unsigned short index;
 		unsigned short addr;
 		
-		lseek(out, pp->elf_offset, SEEK_SET);
-		read(out, &index, 2);
+		fseek(out, pp->elf_offset, SEEK_SET);
+		fread(&index, 2, 1, out);
 		// using index to find the target address
-		lseek(symraw, 2*index, SEEK_SET);
-		read(symraw, &addr, 2);
+		fseek(symraw, 2*index, SEEK_SET);
+		fread(&addr, 2, 1, symraw);
 		
-		lseek(out, pp->elf_offset, SEEK_SET);
-		write(out, &addr, 2);
+		fseek(out, pp->elf_offset, SEEK_SET);
+		fwrite(&addr, 2, 1, out);
       }
     } 
 	
-	close(symraw);
+	fclose(symraw);
 }
 
 
@@ -369,7 +390,13 @@ int main(int argc, char **argv)
 	char cmd[300];
 	
 	//argv[1] is the dir
-    dir = argv[1];
+	if (argc == 2) {
+		option = 0;
+		dir = argv[1];
+	} else {
+	    option = atoi(argv[1]);
+        dir = argv[2];
+	}
 
 	printf("The working directory of bi (binary instrumentation) is %s\n", dir);
 
@@ -380,17 +407,17 @@ int main(int argc, char **argv)
 	system(cmd);
 	
 	sprintf(cmd, "%s/build/telosb/main.exe", dir);
-	in = open(cmd, O_RDWR);
+	in = fopen(cmd, "rb+");
 
 	sprintf(cmd, "%s/build/telosb/out.exe", dir);
-	out = open(cmd, O_RDWR);
+	out = fopen(cmd, "rb+");
 	
 	sprintf(cmd, "%s/build/telosb/rela.raw", dir);
-	rel = open(cmd, O_RDWR|O_CREAT);
+	rel = fopen(cmd, "wb+");
 	
 	// the chained reference version
 	sprintf(cmd, "%s/build/telosb/crela.raw", dir);
-	crel = open(cmd, O_RDWR|O_CREAT);
+	crel = fopen(cmd, "wb+");
 	
 	sprintf(cmd, "%s/build/telosb/rela.txt", dir);
 	reltxt = fopen(cmd, "w+");
@@ -401,10 +428,10 @@ int main(int argc, char **argv)
 	
 	// the bitmap indicating relocation: assume the existance of main.raw
 	sprintf(cmd, "%s/build/telosb/main.raw", dir);
-	raw = open(cmd, O_RDWR);
+	raw = fopen(cmd, "rb+");
 	
 	sprintf(cmd, "%s/build/telosb/bm.raw", dir);
-	bm = open(cmd, O_RDWR|O_CREAT); 
+	bm = fopen(cmd, "wb+"); 
 	
 	// symbols address and allocation of 'jump table'
 	/*
@@ -414,31 +441,36 @@ int main(int argc, char **argv)
 	
 	
        
-	if (in <0) {
+	if (in == NULL) {
 		printf("failed to open build/telosb/main.exe\n");
 		return -1;
 	}
 	
+	if (raw == NULL) {
+		printf("failed to open build/telosb/main.raw\n");
+		return -1;
+	}
+	
 	// read in elf header
-	read(in, &ehdr, sizeof(ehdr));
+	fread(&ehdr, sizeof(ehdr), 1, in);
 	if (memcmp(ehdr.e_ident, elf_magic_header, 7) != 0 /*|| ehdr.e_type != ET_REL*/)
 	{
 		printf("incorrect elf header in main.exe\n");
 		return -1;	
 	}
 	offset = ehdr.e_shoff + ehdr.e_shstrndx*ehdr.e_shentsize;
-	lseek(in, offset, SEEK_SET);
-	read(in, &shdr, sizeof(shdr));
+	fseek(in, offset, SEEK_SET);
+	fread(&shdr, sizeof(shdr), 1, in);
 	
 	shstrtab = (char*)malloc(shdr.sh_size);
-	lseek(in, shdr.sh_offset, SEEK_SET);
-	read(in, shstrtab, shdr.sh_size);
+	fseek(in, shdr.sh_offset, SEEK_SET);
+	fread(shstrtab, shdr.sh_size, 1, in);
 	
 	for (i=0; i<ehdr.e_shnum; ++i) 
 	{
 		offset = ehdr.e_shoff + i*ehdr.e_shentsize;
-		lseek(in, offset, SEEK_SET);
-		read(in, &shdr, sizeof(shdr));
+		fseek(in, offset, SEEK_SET);
+		fread(&shdr, sizeof(shdr), 1, in);
 		
 		if (shdr.sh_size == 0)
 			continue;
@@ -527,8 +559,8 @@ int main(int argc, char **argv)
 	free(shstrtab);
 	
 	strtab = (char*)malloc(strtab_size);
-	lseek(in, strtab_off, SEEK_SET);
-	read(in, strtab, strtab_size);
+	fseek(in, strtab_off, SEEK_SET);
+	fread(strtab, strtab_size, 1, in);
 	
 	printf("Number of relocation entries: %d(.rela.text)+%d(.rela.data)+%d(.rela.vectors)=%d\n", 
 	                                      rela_size/sizeof(rela), 
@@ -546,13 +578,13 @@ int main(int argc, char **argv)
 		unsigned char realb[2];
 		unsigned char instr[2];
 		
-		lseek(in, rela_off+i, SEEK_SET);
-		read(in, &rela, sizeof(rela));
+		fseek(in, rela_off+i, SEEK_SET);
+		fread(&rela, sizeof(rela), 1, in);
 		
 		// 该relocation entry对应哪个symbol
 		offset = symtab_off + sizeof(struct elf32_sym)*ELF32_R_SYM(rela.r_info);
-		lseek(in, offset, SEEK_SET);
-		read(in, &symbol, sizeof(symbol));
+		fseek(in, offset, SEEK_SET);
+		fread(&symbol, sizeof(symbol), 1, in);
 		
 		if (symbol.st_shndx == textndx) addr = text_addr + symbol.st_value + rela.r_addend;
 		else if (symbol.st_shndx == datandx) addr = data_addr + symbol.st_value + rela.r_addend;
@@ -573,8 +605,8 @@ int main(int argc, char **argv)
 		instr[0] = (unsigned char)addr;
 		instr[1] = (unsigned char)(addr >> 8);
 		
-		lseek(in, offset, SEEK_SET);
-		read(in, realb, 2);
+		fseek(in, offset, SEEK_SET);
+		fread(realb, 2, 1, in);
 		
 		if (!symbol.st_name) {
 			// see if we can find one: 优先考虑原来的symbol
@@ -600,19 +632,19 @@ int main(int argc, char **argv)
 		//printf("OFFSET1: %d\n", offset);
 		
 		// (1) write to elf file: simply set it to zero
-		lseek(out, offset, SEEK_SET);
+		fseek(out, offset, SEEK_SET);
 		instr[0] = instr[1] = 0;
-		write(out, instr, 2);
+		if (option==0) fwrite(instr, 2, 1, out);
 		
 		// (2) write to rel
 		// 需要修正的地址 address in the file or the virtual address (i.e. load address)
 		// we use the virtual address first
 		myloc.r_offset = rela.r_offset; // 在哪需要修改
 		
-		lseek(in, offset, SEEK_SET);
-		read(in, &myloc.r_addr, 2); // 修改成什么值
+		fseek(in, offset, SEEK_SET);
+		fread(&myloc.r_addr, 2, 1, in); // 修改成什么值
 		
-		write(rel, &myloc, sizeof(myloc));
+		fwrite(&myloc, sizeof(myloc), 1, rel);
 		
         fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
 		myloc.st_name = symbol.st_name;
@@ -627,12 +659,12 @@ int main(int argc, char **argv)
 		unsigned char realb[2];
 		unsigned char instr[2];
 		
-		lseek(in, rela_data_off+i, SEEK_SET);
-		read(in, &rela, sizeof(rela));
+		fseek(in, rela_data_off+i, SEEK_SET);
+		fread(&rela, sizeof(rela), 1, in);
 		
 		offset = symtab_off + sizeof(struct elf32_sym)*ELF32_R_SYM(rela.r_info);
-		lseek(in, offset, SEEK_SET);
-		read(in, &symbol, sizeof(symbol));
+		fseek(in, offset, SEEK_SET);
+		fread(&symbol, sizeof(symbol), 1, in);
 		
 		if (symbol.st_shndx == textndx) addr = text_addr + symbol.st_value + rela.r_addend;
 		else if (symbol.st_shndx == datandx) addr = data_addr + symbol.st_value + rela.r_addend;
@@ -653,8 +685,8 @@ int main(int argc, char **argv)
 		instr[0] = (unsigned char)addr;
 		instr[1] = (unsigned char)(addr >> 8);
 		
-		lseek(in, offset, SEEK_SET);
-		read(in, realb, 2);
+		fseek(in, offset, SEEK_SET);
+		fread(realb, 2, 1, in);
 		
 		if (!symbol.st_name) {
 			// see if we can find one: 优先考虑原来的symbol
@@ -676,16 +708,16 @@ int main(int argc, char **argv)
 		//printf("OFFSET2: %d\n", offset);
 		
 		// (1) Write to elf:  set it to zero
-		lseek(out, offset, SEEK_SET);
+		fseek(out, offset, SEEK_SET);
 		instr[0] = instr[1] = 0;
-		write(out, instr, 2);
+		if (option==0) fwrite(instr, 2, 1, out);
 		
 		// (2) Write to rel
 		myloc.r_offset = offset; 
-		lseek(in, offset, SEEK_SET);
-		read(in, &myloc.r_addr, 2);
+		fseek(in, offset, SEEK_SET);
+		fread(&myloc.r_addr, 2, 1, in);
 		
-		write(rel, &myloc, sizeof(myloc));
+		fwrite(&myloc, sizeof(myloc), 1, rel);
 		
 		fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
 		
@@ -702,12 +734,12 @@ int main(int argc, char **argv)
 		unsigned char realb[2];
 		unsigned char instr[2];
 		
-		lseek(in, rela_voff+i, SEEK_SET);
-		read(in, &rela, sizeof(rela));
+		fseek(in, rela_voff+i, SEEK_SET);
+		fread(&rela, sizeof(rela), 1, in);
 		
 		offset = symtab_off + sizeof(struct elf32_sym)*ELF32_R_SYM(rela.r_info);
-		lseek(in, offset, SEEK_SET);
-		read(in, &symbol, sizeof(symbol));
+		fseek(in, offset, SEEK_SET);
+		fread(&symbol, sizeof(symbol), 1, in);
 		
 		if (symbol.st_shndx == textndx) addr = text_addr + symbol.st_value + rela.r_addend;
 		else if (symbol.st_shndx == datandx) addr = data_addr + symbol.st_value + rela.r_addend;
@@ -728,8 +760,8 @@ int main(int argc, char **argv)
 		instr[0] = (unsigned char)addr;
 		instr[1] = (unsigned char)(addr >> 8);
 		
-		lseek(in, offset, SEEK_SET);
-		read(in, realb, 2);
+		fseek(in, offset, SEEK_SET);
+		fread(realb, 2, 1, in);
 		
 		if (!symbol.st_name) {
 			// see if we can find one: 优先考虑原来的symbol
@@ -751,16 +783,16 @@ int main(int argc, char **argv)
 		//printf("OFFSET3: %d\n", offset);
 		
 		// (1) Write to elf: set it to zero
-		lseek(out, offset, SEEK_SET);
+		fseek(out, offset, SEEK_SET);
 		instr[0] = instr[1] = 0;
-		write(out, instr, 2);
+		if (option==0) fwrite(instr, 2, 1, out);
 		
 		// (2) Write to rel
 		myloc.r_offset = offset; 
-		lseek(in, offset, SEEK_SET);
-		read(in, &myloc.r_addr, 2);
+		fseek(in, offset, SEEK_SET);
+		fread(&myloc.r_addr, 2, 1, in);
 		
-		write(rel, &myloc, sizeof(myloc));
+		fwrite(&myloc, sizeof(myloc), 1, rel);
 		
 		fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
 		myloc.st_name = symbol.st_name;
@@ -774,40 +806,42 @@ int main(int argc, char **argv)
 	
 	rela_info_t * ptr;
         
-	if (chained) {
+	if (option==1) {
 		for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
           rela_info_t *pp;
           for (pp=ptr; pp != NULL; pp=pp->hnext) {
             unsigned char instr[2];
             instr[0] = (unsigned char)pp->cr; instr[1] = (unsigned char)(pp->cr>>8);
-            lseek(out, pp->elf_offset, SEEK_SET);
-            write(out, instr, 2);
+            fseek(out, pp->elf_offset, SEEK_SET);
+            fwrite(instr, 2, 1, out);
           }
 		} 
 	}
         
 	// write the relocation entry table
     for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
-      write(crel, &ptr->entry, sizeof(reloc_t));
+      fwrite(&ptr->entry, sizeof(reloc_t), 1, crel);
       fprintf(creltxt, "%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
     }
 	
     print_rela();
 	//printf("test: %s\n", getstring(findsymbol(0x1100).st_name, strtab));
 	
-	genbitmap();
-	// generate sym.raw also rewrite out.exe: assume the existence of sym.txt
+	if (option==2) {
+	  genbitmap();
+	  // generate sym.raw also rewrite out.exe: assume the existence of sym.txt
 	
-	gensym();
-	fix(); // then the out.exe should be the same to main.exe
+	  gensym();
+	  fix(); // then the out.exe should be the same to main.exe
+	}
 
 exit:	
-	close(in);
-	close(out);
-	close(rel);     
-	close(crel);
+	fclose(in);
+	fclose(out);
+	fclose(rel);     
+	fclose(crel);
 	
-	close(bm);
+	fclose(bm);
 	
 	fclose(reltxt); 
 	fclose(creltxt);
