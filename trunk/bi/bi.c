@@ -413,11 +413,11 @@ int main(int argc, char **argv)
 	out = fopen(cmd, "rb+");
 	
 	sprintf(cmd, "%s/build/telosb/rela.raw", dir);
-	rel = fopen(cmd, "wb+");
+	rel = fopen(cmd, "wb");
 	
 	// the chained reference version
 	sprintf(cmd, "%s/build/telosb/crela.raw", dir);
-	crel = fopen(cmd, "wb+");
+	crel = fopen(cmd, "wb");
 	
 	sprintf(cmd, "%s/build/telosb/rela.txt", dir);
 	reltxt = fopen(cmd, "w+");
@@ -431,8 +431,18 @@ int main(int argc, char **argv)
 	raw = fopen(cmd, "rb+");
 	
 	sprintf(cmd, "%s/build/telosb/bm.raw", dir);
-	bm = fopen(cmd, "wb+"); 
+	bm = fopen(cmd, "wb"); 
+	/*
+FILE *in, *out, *rel, *crel; 
+FILE *reltxt, *creltxt;
+
+FILE *raw, *bm;
+FILE *oldsymtxt, *newsymtxt;
+FILE *symraw;
+	*/
 	
+	printf("file pointers: in%x out%x rel%x crel%x reltxt%x creltxt%x raw%x bm%x\n", in, out, rel, crel,
+	                                    reltxt, creltxt, raw, bm  );
 	// symbols address and allocation of 'jump table'
 	/*
 	sprintf(cmd, "%s/build/telosb/oldsym.txt", dir);
@@ -824,14 +834,17 @@ int main(int argc, char **argv)
 
     // write the relocation entry table
     for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
-      //fwrite(&ptr->entry, sizeof(reloc_t), 1, crel);
-      fprintf(creltxt, "%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
-	  //printf("%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
+		unsigned short tmp=0;
+      printf("%04X %04X %x\n", ptr->entry.r_offset, ptr->entry.r_addr, crel);
+	  fwrite(&tmp, 2, 1, crel);
+	  fwrite(&tmp, 2, 1, crel);
+      //fprintf(creltxt, "%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
+	  
     }
 	
 	printf("hehe3\n");
 
-    print_rela();
+    //print_rela();
 	//printf("test: %s\n", getstring(findsymbol(0x1100).st_name, strtab));
 	
 	if (option==2) {
@@ -852,7 +865,8 @@ exit:
 	
 	fclose(reltxt); 
 	fclose(creltxt);
-       
-    free_rela(rela_header.vnext);
+  
+  if(rela_header.vnext) free_rela(rela_header.vnext);
+  
 	return 0;
 }
