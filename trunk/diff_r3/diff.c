@@ -126,9 +126,7 @@ int main(int argc, char **argv)
 	  fwrite(dmmap, dsize, 1, delta);
 	  fclose(delta);
 	}
-	
-	printf("%x\n", memaddr(0x0a78));
-	
+
 	freefootprint();
 	free(ommap);
 	free(nmmap);
@@ -364,10 +362,10 @@ void printcmds(int t, int i)
 		memcpy(&dmmap[dx+1], &cmds0[i].length, 2);
 		alendx = dx+1; 
 		dx += alpha;
-		printf("dx=%d\n",dx);
+//		printf("dx=%d\n",dx);
 	  }
 	  dmmap[dx++] = nmmap[cmds0[i].inew];
-	  printf("dx=%d\n",dx);
+//	  printf("dx=%d\n",dx);
 	  alen++;
 	  if (i==nsize) {
 		  memcpy(&dmmap[alendx], &alen, 2);
@@ -390,7 +388,7 @@ void printcmds(int t, int i)
 	  memcpy(&dmmap[dx+3], &cmds0[i].inew, 2);
 	  memcpy(&dmmap[dx+5], &cmds0[i].iold, 2);
 	  dx += beta;
-	  printf("dx=%d\n",dx);
+//	  printf("dx=%d\n",dx);
 	  if (alendx>0) {
 		  memcpy(&dmmap[alendx], &alen, 2);
 		  alen = 0;
@@ -416,11 +414,11 @@ void printcmds(int t, int i)
 		memcpy(&dmmap[dx+1], &cmds1[i].length, 2);
 		alendx = dx+1; 
 		dx += alpha;
-		printf("dx=%d\n",dx);
+//		printf("dx=%d\n",dx);
 	  }
 	  dmmap[dx++] = nmmap[cmds1[i].inew];
 	  
-	  printf("dx=%d\n",dx);
+//	  printf("dx=%d\n",dx);
 	  alen++;
 	  if (i==nsize) {
 		  memcpy(&dmmap[alendx], &alen, 2);
@@ -439,7 +437,7 @@ void printcmds(int t, int i)
 	  memcpy(&dmmap[dx+3], &cmds1[i].inew, 2);
 	  memcpy(&dmmap[dx+5], &cmds1[i].iold, 2);
 	  dx += beta;
-	  printf("dx=%d\n",dx);
+//	  printf("dx=%d\n",dx);
 	  if (alendx>0) {
 		  memcpy(&dmmap[alendx], &alen, 2);
 		  alen = 0;
