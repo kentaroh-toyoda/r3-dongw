@@ -13,4 +13,7 @@ implementation {
   SerialStartP.SerialAMReceive -> AM.Receive[AM_SERIAL_START_ID];
   SerialStartP.SerialControl -> AM;
   SerialStart = SerialStartP;
+  
+  components LedsC;
+  SerialStartP.Leds -> LedsC;
 }
