@@ -9,6 +9,7 @@ module SerialStartP {
     interface AMSend as SerialAMSend;
     interface Receive as SerialAMReceive;
     interface SplitControl as SerialControl;
+    interface Leds;
   }
 }
 implementation {
@@ -51,6 +52,7 @@ implementation {
           state = S_BUSY;
           signal SerialStart.start();
           sendAck(SUCCESS);
+          call Leds.led0On();
         } else {
           state = S_IDLE;
           sendAck(FAIL);
@@ -69,8 +71,10 @@ implementation {
         if (state == S_BUSY) {
           //memcpy((void *)recvPkt->offset, recvPkt->data, recvPkt->len);
           // where do we store
+          call Leds.led1On();
           sendAck(SUCCESS);
         } else {
+        	call Leds.led2On();
           sendAck(FAIL);
           state = S_IDLE;
         }

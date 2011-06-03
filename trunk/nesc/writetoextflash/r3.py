@@ -61,7 +61,8 @@ def inject(image):
   
   print "image size is %d" % len(content)
   
-  for i in range(0, len(content)):
+  i=0
+  while i<len(content):
     if i+AM_DATA_LENGTH >= len(content):
       offset = len(content)-i
     else:
@@ -71,14 +72,11 @@ def inject(image):
     outpkt.cmd = CMD_DATA
     outpkt.data = content[i:i+offset]
     
-    if not am.write(outpkt, CMD_DATA):
+    if not am.write(outpkt, AM_ID):
       print "cannot send data packet"
       return False
     
-    print "1"
-      
     inpkt = am.read()
-    print "2"
     ack = SerialAckPacket(inpkt.data)
     if ack.error != ERROR_SUCCESS:
       print "receive ack (data at %d) error" % i
