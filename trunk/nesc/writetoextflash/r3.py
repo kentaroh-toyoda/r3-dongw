@@ -20,6 +20,8 @@ AM_DATA_LENGTH = 16
 CMD_START = 1
 CMD_STOP  = 2
 CMD_DATA  = 3
+CMD_START_OLD = 4
+CMD_START_DLT = 5
 
 ERROR_SUCCESS = 0
 ERROR_FAIL = 1
@@ -43,10 +45,22 @@ def inject(image):
   except:
     print "cannot find image: %s" % image
     return False
-  outpkt = SerialDataPacket((CMD_START, []))
+  
+  fp = open(image, "rb")
+  
+  firstbyte = struct.unpack("B", fp.read(1))[0]
+  
+  if firstbyte==0:
+    print "send OLD %d" % firstbyte
+    outpkt = SerialDataPacket((CMD_START_OLD, []))
+  else:
+    print "send DELTA %d" % firstbyte
+    outpkt = SerialDataPacket((CMD_START_DLT, []))
+    
   if not am.write(outpkt, AM_ID):
     print "cannot send start packet"
     return False
+  fp.close();
   
   inpkt = am.read()
   ack = SerialAckPacket(outpkt.data)
@@ -82,7 +96,7 @@ def inject(image):
       print "receive ack (data at %d) error" % i
       return False
     
-    print "Send data for i=%d" % i
+    #print "Send data for i=%d" % i
     i += offset
     
   
