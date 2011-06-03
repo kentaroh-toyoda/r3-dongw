@@ -20,8 +20,6 @@ AM_DATA_LENGTH = 16
 CMD_START = 1
 CMD_STOP  = 2
 CMD_DATA  = 3
-CMD_START_OLD = 4
-CMD_START_DLT = 5
 
 ERROR_SUCCESS = 0
 ERROR_FAIL = 1
@@ -30,11 +28,14 @@ class SerialDataPacket(tos.Packet):
   def __init__(self, packet = None):
     tos.Packet.__init__(self,
                         [('cmd',  'int',  1),
+                         ('len',  'int',  2),
                          ('data', 'blob', None)], packet)
 
 class SerialAckPacket(tos.Packet):
   def __init__(self, packet = None):
-    tos.Packet.__init__(self, [('error', 'int', 1)], packet)
+    tos.Packet.__init__(self, 
+                        [('error', 'int', 1),
+                         ('data',  'int', 2)], packet)
 
 def print_usage():
   print "Usage: %s <device port> <baudrate> image" % sys.argv[0]
@@ -52,10 +53,14 @@ def inject(image):
   
   if firstbyte==0:
     print "send OLD %d" % firstbyte
-    outpkt = SerialDataPacket((CMD_START_OLD, []))
+  
+  elif firstbyte==1:
+    print "send NEW %d" % firstbyte
+  
   else:
     print "send DELTA %d" % firstbyte
-    outpkt = SerialDataPacket((CMD_START_DLT, []))
+    
+  outpkt = SerialDataPacket((CMD_START, firstbyte, []))
     
   if not am.write(outpkt, AM_ID):
     print "cannot send start packet"
@@ -84,6 +89,7 @@ def inject(image):
     
     # send content[i:i+offset] # not include the last character
     outpkt.cmd = CMD_DATA
+    outpkt.len = offset
     outpkt.data = content[i:i+offset]
     
     if not am.write(outpkt, AM_ID):

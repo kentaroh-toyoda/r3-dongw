@@ -9,7 +9,6 @@ module SerialStartP {
     interface Boot;
     interface AMSend as SerialAMSend;
     interface Receive as SerialAMReceive;
-    interface Packet;
     interface SplitControl as SerialControl;
     interface Leds;
     
@@ -27,13 +26,12 @@ implementation {
   enum {
     S_IDLE,
     S_BUSY,
-    S_BUSY_OLD,
-    S_BUSY_DLT,
   };
 
   message_t serialMsg;
   uint8_t state = S_IDLE;
   uint16_t curaddr = 0;
+  uint8_t type = 0; // the receive file type, 0: old, 1: new, 2: delta...
   
   event void Boot.booted()
   {
@@ -45,7 +43,7 @@ implementation {
     SerialAckPacket *ack = (SerialAckPacket*)call SerialAMSend.getPayload(&serialMsg, sizeof(SerialAckPacket));
     if (ack == NULL)
       return;
-    ack->error = error;
+    ack->error = error; // currently we do not use the data
     call SerialAMSend.send(AM_BROADCAST_ADDR, &serialMsg, sizeof(SerialAckPacket));
   }
 
@@ -60,25 +58,13 @@ implementation {
     SerialDataPacket *pkt = (SerialDataPacket*)payload;
     
     switch (pkt->cmd) {
-      case CMD_START_OLD:
+      case CMD_START:
         if (state == S_IDLE) {
-          state = S_BUSY_OLD;
+          state = S_BUSY;
           signal SerialStart.start();
           sendAck(SUCCESS);
-          curaddr = 0;
-          call Leds.led0On();
-        } else {
-          state = S_IDLE;
-          sendAck(FAIL);
-        }
-        break;
-      case CMD_START_DLT:
-      	if (state == S_IDLE) {
-          state = S_BUSY_DLT;
-          signal SerialStart.start();
-          sendAck(SUCCESS);
-          curaddr = 0;
-          call Leds.led1On();
+          curaddr = 0; 
+          type = pkt->len; // for cmd pkt, len indicates the type
         } else {
           state = S_IDLE;
           sendAck(FAIL);
@@ -99,18 +85,21 @@ implementation {
         }
         break;
       case CMD_DATA:
-        if (state == S_BUSY_OLD) {
+        if (type == 0) { // OLD
           //memcpy((void *)recvPkt->offset, recvPkt->data, recvPkt->len);
           // where do we store para: addr,buf,len
-          call SubBlockWrite_1.write(curaddr, pkt->data, call Packet.payloadLength(msg)-1);
+          call SubBlockWrite_1.write(curaddr, pkt->data, pkt->len);
           sendAck(SUCCESS);
-          curaddr += call Packet.payloadLength(msg)-1;
-          call Leds.led2Toggle();
+          curaddr += pkt->len;
+          call Leds.led0Toggle();
         } 
-        else if (state == S_BUSY_DLT) {
-        	call SubBlockWrite_3.write(curaddr, pkt->data, call Packet.payloadLength(msg)-1);
+        else if (type == 1) { // NEW
+        	
+        }
+        else if (type == 2) { // DELTA ...
+        	call SubBlockWrite_3.write(curaddr, pkt->data, pkt->len);
         	sendAck(SUCCESS);
-        	curaddr += call Packet.payloadLength(msg)-1;
+        	curaddr += pkt->len;
         	call Leds.led2Toggle();
         }
         else {

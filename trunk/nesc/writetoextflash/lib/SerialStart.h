@@ -9,17 +9,17 @@ enum {
   CMD_START = 1,
   CMD_STOP  = 2,
   CMD_DATA  = 3,
-  CMD_START_OLD = 4,
-  CMD_START_DLT = 5,
 };
 
 typedef nx_struct SerialDataPacket {
   nx_uint8_t cmd;
+  nx_uint16_t len;
   nx_uint8_t data[0];
 } SerialDataPacket;
 
 typedef nx_struct SerialAckPacket {
   nx_uint8_t error;
+  nx_uint16_t data; // store CRC et al
 } SerialAckPacket;
 
 #endif // __SERIAL_START_H__
