@@ -9,6 +9,8 @@ enum {
   CMD_START = 1,
   CMD_STOP  = 2,
   CMD_DATA  = 3,
+  CMD_START_OLD = 4,
+  CMD_START_DLT = 5,
 };
 
 typedef nx_struct SerialDataPacket {
