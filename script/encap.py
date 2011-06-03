@@ -29,7 +29,7 @@ for i in range(2,len(sys.argv)):
     sys.exit()
   print "%s file size = %d" % (sys.argv[i], st.st_size)
   
-  out.write(chr(i));
+  out.write(chr(i-2+len(sys.argv)-3)); # 0 for old code, 
   out.write(struct.pack('H', st.st_size)); # unsigned short
   
   fp = open(sys.argv[i], "rb")
