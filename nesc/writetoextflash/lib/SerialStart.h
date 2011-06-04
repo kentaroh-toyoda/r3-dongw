@@ -1,6 +1,10 @@
 #ifndef __SERIAL_START_H__
 #define __SERIAL_START_H__
 
+#define CMD_ADD 0
+#define CMD_COPY 1
+
+
 enum {
   AM_SERIAL_START_ID = 0x39,
 };
