@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 	freefootprint();
 	free(ommap);
 	free(nmmap);
-	free(dmmap);
+//	free(dmmap);
 	free(opt); free(opt0); free(opt1);
 	free(cmds); free(cmds0); free(cmds1);
 	free(s0); free(s1);
