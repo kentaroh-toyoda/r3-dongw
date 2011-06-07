@@ -1,6 +1,8 @@
 #include "SerialStart.h"
 #include "StorageVolumes.h"
 
+#include "pr.h"
+
 #define MAX_SIZE 100
 
 module SerialStartP {
@@ -58,6 +60,10 @@ implementation {
   uint16_t daddr; // for delta
   uint16_t naddr; // for new code
   
+  
+  
+  void patch();
+  
   event void Boot.booted()
   {
     call SerialControl.start();
@@ -76,6 +82,8 @@ implementation {
   {
     if (error != SUCCESS)
       call SerialControl.start();
+    else
+    	patch();
   }
 
   event message_t* SerialAMReceive.receive(message_t* msg, void* payload, uint8_t len)
@@ -143,10 +151,22 @@ implementation {
   	pst = READ_FILEINFO; 
   	daddr = 0; naddr = 0;
   	call SubBlockRead_3.read(0, buffer, 3); // should be 2: delta
+  	pr("patch start\n");
   }
-
+  
+  
+  
   event void SerialControl.stopDone(error_t error) {}
   event void SerialAMSend.sendDone(message_t* msg, error_t error) {}
+  
+  uint8_t deof(uint16_t addr, uint16_t size) {
+  	if (addr >= size+3) {
+  		call Leds.led1On();
+  		pr("patch end, new code size=%d\n", naddr);
+  		return 1;
+  	}
+  	return 0;
+  }
   
   default event void SerialStart.start() {}
   default event void SerialStart.stop() {}
@@ -175,7 +195,7 @@ implementation {
     		// see if the cmd completes
     		cmdlen -= len;
     		if (cmdlen <= 0) { // start new command
-    			if (daddr >= dsize+3) return;
+    			if (deof(daddr, dsize)) return;
     			
     			pst = READ_CMD_1;
     			call SubBlockRead_3.read(daddr, buffer, 3); 
@@ -190,7 +210,7 @@ implementation {
     	case EXE_COPY_WRITE:
     		cmdlen -= len;
     		if (cmdlen <= 0) {
-    			if (daddr >= dsize+3) return;
+    			if (deof(daddr, dsize)) return;
     				
     			pst = READ_CMD_1;
     			call SubBlockRead_3.read(daddr, buffer, 3);
@@ -218,7 +238,7 @@ implementation {
   		  dtype = buffer[0];
   		  dsize = (buffer[2]<<8) + buffer[1];
   		  
-  		  if (daddr >= dsize+3) return;
+  		  if (deof(daddr, dsize)) return;
   		  	
   		  pst = READ_CMD_1; // read first part of a command
   		  call SubBlockRead_3.read(daddr, buffer, 3);
@@ -252,6 +272,8 @@ implementation {
   			//memcpy(&cmdiold, &buffer[2], 2);
   			cmdinew = (buffer[1]<<8) + buffer[0];
   			cmdiold = (buffer[3]<<8) + buffer[2];
+  			
+  			cmdiold += 3; // fileinfo header
   			
   			pst = EXE_COPY_READ;
   			if (cmdlen>MAX_SIZE) {
