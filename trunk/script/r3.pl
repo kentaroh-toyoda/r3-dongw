@@ -27,33 +27,42 @@ $cmd = "cd $update; make telosb -f mfr; cd ../script";
 print "$cmd\n";
 $info = `$cmd`;
 
-# RC: generate out.exe with reference inflated with 0s
-# and also generate a relocation table in rela.raw file
-
-$cmd = "../bi/bi.exe $base >$base/bi.txt";
+## bi requires main.raw
+$cmd = "perl hex2raw.pl $base/build/telosb/main.ihex $base/build/telosb/main.raw";
 print "$cmd\n";
 $info = `$cmd`;
 
-$cmd = "../bi/bi.exe $update >$update/bi.txt";
+$cmd = "perl hex2raw.pl $update/build/telosb/main.ihex $update/build/telosb/main.raw";
+print "$cmd\n";
+$info = `$cmd`;
+
+# RC: generate out.exe with reference inflated with 0s
+# and also generate a relocation table in rela.raw file
+
+$cmd = "../bi/bi.exe 2 $base >$base/build/telosb/bi.txt";
+print "$cmd\n";
+$info = `$cmd`;
+
+$cmd = "../bi/bi.exe 2 $update >$update/build/telosb/bi.txt";
 print "$cmd\n";
 $info = `$cmd`;
 
 ## generate sym.txt
-$cmd = "perl gensym.pl $base/bi.txt >$base/build/telosb/sym.txt";
+$cmd = "perl gensym.pl $base/build/telosb/bi.txt >$base/build/telosb/sym.txt";
 print "$cmd\n";
 $info = `$cmd`;
 
-$cmd = "perl gensym.pl $update/bi.txt $base/build/telosb/sym.txt >$update/build/telosb/sym.txt";
+$cmd = "perl gensym.pl $update/build/telosb/bi.txt $base/build/telosb/sym.txt >$update/build/telosb/sym.txt";
 print "$cmd\n";
 $info = `$cmd`;
 
 ## re-execute bi.exe, 前一次地址填充为0, 这一次(因为有sym.txt存在)
 ## 填充为正确的jump table index
-$cmd = "../bi/bi.exe $base >$base/bi.txt";
+$cmd = "../bi/bi.exe 2 $base >$base/build/telosb/bi2.txt";
 print "$cmd\n";
 $info = `$cmd`;
 
-$cmd = "../bi/bi.exe $update >$base/bi.txt";
+$cmd = "../bi/bi.exe 2 $update >$update/build/telosb/bi2.txt";
 print "$cmd\n";
 $info = `$cmd`;
 
@@ -74,6 +83,8 @@ $cmd = "perl ./hex2raw.pl $update/build/telosb/out.ihex $update/build/telosb/out
 print "$cmd\n";
 $info = `$cmd`;
 
-$cmd = "../rmtd_r2/rmtd.exe $base/build/telosb/out.raw $update/build/telosb/out.raw 8 > r3.log";
+#$cmd = "../rmtd_r2/rmtd.exe $base/build/telosb/out.raw $update/build/telosb/out.raw 8 > r3.log";
+$cmd = "../diff_r3/diff.exe $base/build/telosb/out.raw $update/build/telosb/out.raw delta.raw > r3.log";
 print "$cmd\n";
 $info = `$cmd`;
+
