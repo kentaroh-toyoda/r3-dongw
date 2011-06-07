@@ -1,0 +1,5 @@
+1. windows linux计算结果不对
+2. go must be compiled under TinyOS 2.1.0
+3. patch.c好像有问题
+4. mote上patch和load的过程需要验证; 并评测其overhead
+5. 集成测试
