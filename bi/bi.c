@@ -635,7 +635,7 @@ FILE *symraw;
 		       str, realb[1], realb[0], 
 			   symbol.st_value+rela.r_addend, symbol.st_value, 
 		       rela.r_offset); 
-	    // fixbug: ¿ÉÄÜÊÇGCCµÄÎÊÌâ£, symbol address²»Ì«¶Ô£¬¼´Ê¹ÓÃreadelfÒ²ºÃÏñÓĞÎÊÌâ¡£
+	    // fixbug: ¿ÉÄÜÊÇGCCµÄÎÊÌâ? symbol address²»Ì«¶Ô£¬¼´Ê¹ÓÃreadelfÒ²ºÃÏñÓĞÎÊÌâ¡£
 		// ¿ÉÒÔÍ¨¹ırealb½øĞĞ·´Ïò²éÕÒ£¬ÕÒµ½ÏàÓ¦µÄsymbol
 		
 		
