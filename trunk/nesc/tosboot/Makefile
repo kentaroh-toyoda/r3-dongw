@@ -33,6 +33,8 @@ TINYOS_NP=
 
 PFLAGS += -DNESC_BUILD_BINARY
 
+CFLAGS += -DENABLE_PR
+
 # ifeq ($(MAKECMDGOALS),mica2)
 #   CFLAGS += -DTOSBOOT_START=0x1f000 -DTOSBOOT_END=0x20000
 #   CFLAGS += -Wl,--section-start=.text=0x1f000
@@ -97,6 +99,6 @@ endif
 
 strip_iv: FORCE
 	@echo "    removing interrupt vector from binary"
-	msp430-objcopy -j .text -j .data -O ihex $(BUILDDIR)/main.exe $(BUILDDIR)/main.ihex
+	msp430-objcopy -j .text -j .data -j .vectors -O ihex $(BUILDDIR)/main.exe $(BUILDDIR)/main.ihex
 
 include $(MAKERULES)

@@ -122,8 +122,6 @@ typedef int32_t swblk_t;
 typedef int32_t ufs_daddr_t;
 typedef int32_t ufs_time_t;
 typedef u_int32_t uid_t;
-# 40 "/usr/msp430/include/string.h" 3
-extern void *memcpy(void *arg_0x40283200, const void *arg_0x40283398, size_t arg_0x40283530);
 # 59 "/usr/msp430/include/stdlib.h" 3
 #line 56
 typedef struct __nesc_unnamed4242 {
@@ -641,13 +639,7 @@ struct timerb_t;
 volatile unsigned char DCOCTL __asm ("0x0056");
 
 volatile unsigned char BCSCTL1 __asm ("0x0057");
-# 18 "/usr/msp430/include/msp430/adc12.h" 3
-volatile unsigned int ADC12CTL0 __asm ("0x01A0");
-
-volatile unsigned int ADC12CTL1 __asm ("0x01A2");
-
-volatile unsigned int ADC12IFG __asm ("0x01A4");
-#line 42
+# 42 "/usr/msp430/include/msp430/adc12.h" 3
 #line 30
 typedef struct __nesc_unnamed4254 {
   volatile unsigned 
@@ -710,12 +702,6 @@ struct adc12_t {
 
 
 struct adc12_t;
-#line 104
-volatile unsigned int ADC12MEM0 __asm ("0x0140");
-#line 147
-volatile unsigned char ADC12MCTL0 __asm ("0x0080");
-# 71 "/usr/msp430/include/msp430/common.h" 3
-volatile unsigned int WDTCTL __asm ("0x0120");
 # 65 "/usr/msp430/include/msp430x16x.h" 3
 volatile unsigned char IFG1 __asm ("0x0002");
 #line 83
@@ -1389,8 +1375,6 @@ typedef nx_struct DelugeObjDesc {
   nx_page_num_t numPgsComplete;
   nx_uint8_t reserved;
 } __attribute__((packed)) DelugeObjDesc;
-# 42 "crc.h"
-static inline uint16_t crcByte(uint16_t crc, uint8_t b);
 # 56 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/chips/msp430/usart/msp430usart.h"
 #line 48
 typedef enum __nesc_unnamed4269 {
@@ -1718,30 +1702,8 @@ static uint8_t HplUsart0C__HplUsartControl__rx(void );
 static error_t HplUsart0C__HplUsartControl__isRxIntrPending(void );
 # 32 "Hardware.nc"
 static void HardwareC__Hardware__init(void );
-static void HardwareC__Hardware__reboot(void );
-# 48 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/interfaces/InternalFlash.nc"
-static error_t InternalFlashC__InternalFlash__read(void *addr, 
-#line 42
-void * buf, 
-
-
-
-
-
-uint16_t size);
-#line 60
-static error_t InternalFlashC__InternalFlash__write(void *addr, 
-#line 55
-void * buf, 
-
-
-
-
-uint16_t size);
 # 34 "Leds.nc"
 static void LedsC__Leds__glow(uint8_t a, uint8_t b);
-#line 33
-static void LedsC__Leds__flash(uint8_t a);
 #line 32
 static void LedsC__Leds__set(uint8_t ledsOn);
 # 74 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/interfaces/StdControl.nc"
@@ -1758,11 +1720,8 @@ static error_t PowerOffC__StdControl__start(void );
 static error_t PowerOffC__StdControl__stop(void );
 # 32 "ProgFlash.nc"
 static error_t ProgFlashC__ProgFlash__write(in_flash_addr_t addr, uint8_t *buf, in_flash_addr_t len);
-# 32 "Voltage.nc"
-static bool VoltageC__Voltage__okToProgram(void );
 # 32 "Hardware.nc"
 static void TosBootP__Hardware__init(void );
-static void TosBootP__Hardware__reboot(void );
 # 32 "ExtFlash.nc"
 static void TosBootP__ExtFlash__startRead(uint32_t addr);
 
@@ -1785,36 +1744,11 @@ static error_t TosBootP__SubControl__start(void );
 
 
 static error_t TosBootP__SubControl__stop(void );
-# 32 "Voltage.nc"
-static bool TosBootP__Voltage__okToProgram(void );
-# 34 "Leds.nc"
-static void TosBootP__Leds__glow(uint8_t a, uint8_t b);
-#line 33
-static void TosBootP__Leds__flash(uint8_t a);
-#line 32
+# 32 "Leds.nc"
 static void TosBootP__Leds__set(uint8_t ledsOn);
 # 3 "Exec.nc"
 static void TosBootP__Exec__exec(void );
-# 48 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/interfaces/InternalFlash.nc"
-static error_t TosBootP__IntFlash__read(void *addr, 
-#line 42
-void * buf, 
-
-
-
-
-
-uint16_t size);
-#line 60
-static error_t TosBootP__IntFlash__write(void *addr, 
-#line 55
-void * buf, 
-
-
-
-
-uint16_t size);
-# 55 "TosBootP.nc"
+# 58 "TosBootP.nc"
 enum TosBootP____nesc_unnamed4287 {
   TosBootP__LEDS_LOWBATT = 1, 
   TosBootP__LEDS_GESTURE = 7
@@ -1825,10 +1759,8 @@ enum TosBootP____nesc_unnamed4288 {
   TosBootP__R_INVALID_IMAGE_ERROR, 
   TosBootP__R_PROGRAMMING_ERROR
 };
-
-static void TosBootP__startupLeds(void );
-
-
+#line 89
+static uint32_t TosBootP__extFlashReadDWord(void );
 
 
 
@@ -1836,21 +1768,12 @@ static void TosBootP__startupLeds(void );
 
 
 
-static in_flash_addr_t TosBootP__extFlashReadAddr(void );
-#line 100
-static bool TosBootP__verifyBlock(ex_flash_addr_t crcAddr, ex_flash_addr_t startAddr, uint16_t len);
-#line 119
-static inline bool TosBootP__verifyImage(ex_flash_addr_t startAddr);
-#line 151
-static error_t TosBootP__programImage(ex_flash_addr_t startAddr);
-#line 225
+static uint16_t TosBootP__extFlashReadWord(void );
+#line 230
 static inline void TosBootP__runApp(void );
-
-
-
-
-static inline void TosBootP__startupSequence(void );
-#line 380
+#line 289
+static inline void TosBootP__load(void );
+#line 406
 int main(void )   ;
 # 36 "lib/ExecC.nc"
 static inline void ExecC__Exec__exec(void );
@@ -1942,11 +1865,6 @@ static inline void HplUsart0C__HplUsartControl__tx(uint8_t data);
 static inline uint8_t HplUsart0C__HplUsartControl__rx(void );
 # 39 "msp430/HardwareC.nc"
 static inline void HardwareC__Hardware__init(void );
-
-
-
-
-static inline void HardwareC__Hardware__reboot(void );
 # 48 "msp430/InternalFlashC.nc"
 enum InternalFlashC____nesc_unnamed4289 {
   InternalFlashC__IFLASH_OFFSET = 0x1000, 
@@ -1955,20 +1873,6 @@ enum InternalFlashC____nesc_unnamed4289 {
   InternalFlashC__IFLASH_SEG1_VNUM_ADDR = 0x10ff, 
   InternalFlashC__IFLASH_INVALID_VNUM = -1
 };
-
-static uint8_t InternalFlashC__chooseSegment(void );
-
-
-
-
-
-
-
-
-
-static error_t InternalFlashC__InternalFlash__write(void *addr, void *buf, uint16_t size);
-#line 108
-static inline error_t InternalFlashC__InternalFlash__read(void *addr, void *buf, uint16_t size);
 # 37 "lib/LedsC.nc"
 enum LedsC____nesc_unnamed4290 {
   LedsC__RED_BIT = 1, 
@@ -1977,10 +1881,8 @@ enum LedsC____nesc_unnamed4290 {
 };
 
 static void LedsC__Leds__set(uint8_t ledsOn);
-#line 58
-static void LedsC__Leds__flash(uint8_t a);
 #line 70
-static void LedsC__Leds__glow(uint8_t a, uint8_t b);
+static inline void LedsC__Leds__glow(uint8_t a, uint8_t b);
 # 84 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/interfaces/StdControl.nc"
 static error_t PowerOffC__SubControl__stop(void );
 # 34 "Leds.nc"
@@ -2001,8 +1903,6 @@ static inline error_t ProgFlashC__ProgFlash__write(in_flash_addr_t addr, uint8_t
 enum VoltageC____nesc_unnamed4292 {
   VoltageC__VTHRESH = 0xE66
 };
-
-static inline bool VoltageC__Voltage__okToProgram(void );
 # 50 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/system/SchedulerBasicP.nc"
 enum SchedulerBasicP____nesc_unnamed4293 {
 
@@ -2132,6 +2032,28 @@ static inline  error_t ecombine(error_t r1, error_t r2)
   return r1 == r2 ? r1 : FAIL;
 }
 
+# 41 "telosb/hardware.h"
+static inline void wait(uint16_t t)
+#line 41
+{
+  for (; t > 0; t--) ;
+}
+
+# 70 "lib/LedsC.nc"
+static inline void LedsC__Leds__glow(uint8_t a, uint8_t b)
+#line 70
+{
+  int i;
+
+#line 72
+  for (i = 1536; i > 0; i -= 4) {
+      LedsC__Leds__set(a);
+      wait(i);
+      LedsC__Leds__set(b);
+      wait(1536 - i);
+    }
+}
+
 # 34 "Leds.nc"
 inline static void PowerOffC__Leds__glow(uint8_t a, uint8_t b){
 #line 34
@@ -2181,13 +2103,6 @@ static inline  uint8_t TOSH_READ_USERINT_PIN()
 
 #line 58
   return r & (1 << 7);
-}
-
-#line 41
-static inline void wait(uint16_t t)
-#line 41
-{
-  for (; t > 0; t--) ;
 }
 
 # 65 "msp430f1611/PowerOffC.nc"
@@ -2365,188 +2280,6 @@ inline static void TosBootP__Exec__exec(void ){
 #line 3
 }
 #line 3
-# 225 "TosBootP.nc"
-static inline void TosBootP__runApp(void )
-#line 225
-{
-  TosBootP__SubControl__stop();
-  TosBootP__Exec__exec();
-}
-
-# 60 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/interfaces/InternalFlash.nc"
-inline static error_t TosBootP__IntFlash__write(void *addr, void * buf, uint16_t size){
-#line 60
-  unsigned char result;
-#line 60
-
-#line 60
-  result = InternalFlashC__InternalFlash__write(addr, buf, size);
-#line 60
-
-#line 60
-  return result;
-#line 60
-}
-#line 60
-# 44 "msp430/HardwareC.nc"
-static inline void HardwareC__Hardware__reboot(void )
-#line 44
-{
-  WDTCTL = 0;
-}
-
-# 33 "Hardware.nc"
-inline static void TosBootP__Hardware__reboot(void ){
-#line 33
-  HardwareC__Hardware__reboot();
-#line 33
-}
-#line 33
-# 33 "Leds.nc"
-inline static void TosBootP__Leds__flash(uint8_t a){
-#line 33
-  LedsC__Leds__flash(a);
-#line 33
-}
-#line 33
-# 108 "msp430/InternalFlashC.nc"
-static inline error_t InternalFlashC__InternalFlash__read(void *addr, void *buf, uint16_t size)
-#line 108
-{
-
-  addr += InternalFlashC__IFLASH_OFFSET;
-  if (InternalFlashC__chooseSegment()) {
-    addr += InternalFlashC__IFLASH_SIZE;
-    }
-  memcpy(buf, addr, size);
-
-  return SUCCESS;
-}
-
-# 48 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/interfaces/InternalFlash.nc"
-inline static error_t TosBootP__IntFlash__read(void *addr, void * buf, uint16_t size){
-#line 48
-  unsigned char result;
-#line 48
-
-#line 48
-  result = InternalFlashC__InternalFlash__read(addr, buf, size);
-#line 48
-
-#line 48
-  return result;
-#line 48
-}
-#line 48
-# 43 "msp430/VoltageC.nc"
-static inline bool VoltageC__Voltage__okToProgram(void )
-#line 43
-{
-
-  int i;
-
-
-  ADC12CTL0 = (0x0010 | (2 << 8)) | 0x0020;
-
-  ADC12CTL1 = 0x0200;
-
-  ADC12MCTL0 = (0x80 | (1 << 4)) | 11;
-
-  for (i = 0; i < 0x3600; i++) ;
-
-
-  ADC12CTL0 |= 0x0002;
-
-  ADC12CTL0 |= 0x0001;
-
-  while ((ADC12IFG & 0x0001) == 0) ;
-
-
-  ADC12CTL0 &= ~0x0002;
-  ADC12CTL0 = 0;
-
-
-  return ADC12MEM0 > VoltageC__VTHRESH;
-}
-
-# 32 "Voltage.nc"
-inline static bool TosBootP__Voltage__okToProgram(void ){
-#line 32
-  unsigned char result;
-#line 32
-
-#line 32
-  result = VoltageC__Voltage__okToProgram();
-#line 32
-
-#line 32
-  return result;
-#line 32
-}
-#line 32
-# 230 "TosBootP.nc"
-static inline void TosBootP__startupSequence(void )
-#line 230
-{
-
-  BootArgs args;
-
-
-
-
-  if (!TosBootP__Voltage__okToProgram()) {
-
-      TosBootP__Leds__flash(TosBootP__LEDS_LOWBATT);
-      TosBootP__startupLeds();
-      TosBootP__runApp();
-    }
-
-
-  TosBootP__IntFlash__read((uint8_t *)TOSBOOT_ARGS_ADDR, &args, sizeof args);
-
-
-  if (++ args.gestureCount >= TOSBOOT_GESTURE_MAX_COUNT - 1) {
-
-      TosBootP__Leds__flash(TosBootP__LEDS_GESTURE);
-
-
-
-
-
-      if (TosBootP__programImage(TOSBOOT_GOLDEN_IMG_ADDR) == TosBootP__R_PROGRAMMING_ERROR) {
-          TosBootP__Hardware__reboot();
-        }
-    }
-  else {
-
-      TosBootP__IntFlash__write((uint8_t *)TOSBOOT_ARGS_ADDR, &args, sizeof args);
-      if (! args.noReprogram) {
-
-
-          if (TosBootP__programImage(args.imageAddr) == TosBootP__R_PROGRAMMING_ERROR) {
-              TosBootP__Hardware__reboot();
-            }
-        }
-    }
-
-
-  TosBootP__startupLeds();
-
-
-  args.gestureCount = 0xff;
-  args.noReprogram = TRUE;
-  TosBootP__IntFlash__write((uint8_t *)TOSBOOT_ARGS_ADDR, &args, sizeof args);
-
-  TosBootP__runApp();
-}
-
-# 34 "Leds.nc"
-inline static void TosBootP__Leds__glow(uint8_t a, uint8_t b){
-#line 34
-  LedsC__Leds__glow(a, b);
-#line 34
-}
-#line 34
 # 81 "msp430f1611/PowerOffC.nc"
 static inline error_t PowerOffC__StdControl__stop(void )
 #line 81
@@ -2554,6 +2287,80 @@ static inline error_t PowerOffC__StdControl__stop(void )
   return SUCCESS;
 }
 
+# 84 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/interfaces/StdControl.nc"
+inline static error_t TosBootP__SubControl__stop(void ){
+#line 84
+  unsigned char result;
+#line 84
+
+#line 84
+  result = ExtFlashP__StdControl__stop();
+#line 84
+  result = ecombine(result, PowerOffC__StdControl__stop());
+#line 84
+
+#line 84
+  return result;
+#line 84
+}
+#line 84
+# 230 "TosBootP.nc"
+static inline void TosBootP__runApp(void )
+#line 230
+{
+  TosBootP__SubControl__stop();
+  TosBootP__Exec__exec();
+}
+
+# 43 "msp430/ProgFlashC.nc"
+static inline error_t ProgFlashC__ProgFlash__write(in_flash_addr_t addr, uint8_t *buf, uint16_t len)
+#line 43
+{
+
+  volatile uint16_t *flashAddr = (uint16_t *)(uint16_t )addr;
+  uint16_t *wordBuf = (uint16_t *)buf;
+  uint16_t i = 0;
+
+
+
+  if (addr < 0xffff - (len >> 1)) {
+      FCTL2 = 0xA500 + 0x0080 + 0x0004;
+      FCTL3 = 0xA500;
+      FCTL1 = 0xA500 + 0x0002;
+      *flashAddr = 0;
+      FCTL1 = 0xA500 + 0x0040;
+      for (i = 0; i < len >> 1; i++, flashAddr++) {
+          if ((uint16_t )flashAddr != ProgFlashC__RESET_ADDR) {
+            *flashAddr = wordBuf[i];
+            }
+          else {
+#line 61
+            *flashAddr = 0x4000;
+            }
+        }
+#line 63
+      FCTL1 = 0xA500;
+      FCTL3 = 0xA500 + 0x0010;
+      return SUCCESS;
+    }
+  return FAIL;
+}
+
+# 32 "ProgFlash.nc"
+inline static error_t TosBootP__ProgFlash__write(in_flash_addr_t addr, uint8_t *buf, in_flash_addr_t len){
+#line 32
+  unsigned char result;
+#line 32
+
+#line 32
+  result = ProgFlashC__ProgFlash__write(addr, buf, len);
+#line 32
+
+#line 32
+  return result;
+#line 32
+}
+#line 32
 # 62 "telosb/hardware.h"
 static inline  void TOSH_SET_FLASH_CS_PIN()
 #line 62
@@ -2579,7 +2386,14 @@ inline static void TosBootP__ExtFlash__stopRead(void ){
 #line 34
 }
 #line 34
-#line 33
+#line 32
+inline static void TosBootP__ExtFlash__startRead(uint32_t addr){
+#line 32
+  ExtFlashP__ExtFlash__startRead(addr);
+#line 32
+}
+#line 32
+
 inline static uint8_t TosBootP__ExtFlash__readByte(void ){
 #line 33
   unsigned char result;
@@ -2594,46 +2408,155 @@ inline static uint8_t TosBootP__ExtFlash__readByte(void ){
 #line 33
 }
 #line 33
+# 32 "Leds.nc"
+inline static void TosBootP__Leds__set(uint8_t ledsOn){
 #line 32
-inline static void TosBootP__ExtFlash__startRead(uint32_t addr){
-#line 32
-  ExtFlashP__ExtFlash__startRead(addr);
+  LedsC__Leds__set(ledsOn);
 #line 32
 }
 #line 32
-# 119 "TosBootP.nc"
-static inline bool TosBootP__verifyImage(ex_flash_addr_t startAddr)
-#line 119
+# 289 "TosBootP.nc"
+static inline void TosBootP__load(void )
+#line 289
 {
-  uint32_t addr;
-  uint8_t numPgs;
-  uint8_t i;
+  uint8_t tmp = 0;
+  uint8_t codebuf[512];
+  uint8_t bmbuf[512 / 16];
+  uint8_t bmtype;
+#line 293
+  uint8_t symtype;
+#line 293
+  uint8_t codetype;
+  uint16_t bmsize;
+#line 294
+  uint16_t symsize;
+#line 294
+  uint16_t codesize;
+
+  uint16_t addrc;
+#line 296
+  uint16_t addrb;
+  uint16_t symoffset;
+
+  uint8_t b1;
+#line 299
+  uint8_t b2;
+#line 299
+  uint8_t b3;
+  uint8_t section_count = 0;
+
+  TosBootP__Leds__set(1);
 
 
-  if (!TosBootP__verifyBlock(startAddr + (size_t )& ((DelugeIdent *)0)->crc, 
-  startAddr, (size_t )& ((DelugeIdent *)0)->crc)) {
-    return FALSE;
-    }
+  TosBootP__ExtFlash__startRead(0);
+  bmtype = TosBootP__ExtFlash__readByte();
+  bmsize = TosBootP__extFlashReadWord();
 
-  TosBootP__ExtFlash__startRead(startAddr + (size_t )& ((DelugeIdent *)0)->numPgs);
-  numPgs = TosBootP__ExtFlash__readByte();
+
+
   TosBootP__ExtFlash__stopRead();
 
-  if (numPgs == 0 || numPgs == 0xff) {
-    return FALSE;
-    }
-  startAddr += DELUGE_IDENT_SIZE;
-  addr = DELUGE_CRC_BLOCK_SIZE;
 
-  for (i = 0; i < numPgs; i++) {
-      if (!TosBootP__verifyBlock(startAddr + i * sizeof(uint16_t ), 
-      startAddr + addr, DELUGE_BYTES_PER_PAGE)) {
-          return FALSE;
+
+  TosBootP__ExtFlash__startRead(3 + bmsize);
+  symtype = TosBootP__ExtFlash__readByte();
+  symsize = TosBootP__extFlashReadWord();
+  TosBootP__ExtFlash__stopRead();
+
+
+
+  TosBootP__ExtFlash__startRead(6 + bmsize + symsize);
+  codetype = TosBootP__ExtFlash__readByte();
+  codesize = TosBootP__extFlashReadWord();
+  TosBootP__ExtFlash__stopRead();
+
+
+  symoffset = 6 + bmsize;
+  addrc = 9 + bmsize + symsize;
+  addrb = 0;
+
+
+  while (1) {
+      uint32_t section_addr;
+#line 334
+      uint32_t section_len;
+      uint16_t memaddr;
+
+      section_count++;
+      TosBootP__ExtFlash__startRead(addrc);
+      section_addr = TosBootP__extFlashReadDWord();
+      section_len = TosBootP__extFlashReadDWord();
+      TosBootP__ExtFlash__stopRead();
+
+      if (section_addr == 0 && section_len == 0) {
+        break;
         }
-      addr += DELUGE_BYTES_PER_PAGE;
-    }
+      addrc += 8;
+      addrb += 8;
 
-  return TRUE;
+      memaddr = section_addr;
+
+      while (section_len > 0) {
+          uint16_t i;
+#line 352
+          uint16_t mylen;
+#line 352
+          uint16_t bmlen;
+
+#line 353
+          mylen = section_len < 512 ? section_len : 512;
+
+
+
+          TosBootP__ExtFlash__startRead(addrc);
+          for (i = 0; i < mylen; i++) {
+              codebuf[i] = TosBootP__ExtFlash__readByte();
+            }
+          addrc += mylen;
+          TosBootP__ExtFlash__stopRead();
+
+          bmlen = (mylen + 15) / 16 < 512 / 16 ? (mylen + 15) / 16 : 512 / 16;
+
+          TosBootP__ExtFlash__startRead(addrb);
+          for (i = 0; i < bmlen; i++) {
+              bmbuf[i] = TosBootP__ExtFlash__readByte();
+            }
+          addrb += bmlen;
+          TosBootP__ExtFlash__stopRead();
+
+
+
+          for (i = 0; i < mylen; i += 2) {
+              uint16_t addr = memaddr + i;
+              uint16_t byteaddr = i / 16;
+              uint16_t bitaddr = i / 2 % 8;
+
+              if (bmbuf[byteaddr] & (0x1 << bitaddr)) {
+
+
+                  uint16_t index;
+#line 383
+                  uint16_t target;
+
+#line 384
+                  index = ((uint16_t )codebuf[i + 1] << 8) + codebuf[i];
+                  TosBootP__ExtFlash__startRead(symoffset + index * 2);
+                  target = TosBootP__extFlashReadWord();
+                  TosBootP__ExtFlash__stopRead();
+
+                  codebuf[i + 1] = (uint8_t )(target >> 8);
+                  codebuf[i] = (uint8_t )(target & 0xff);
+                }
+            }
+
+          TosBootP__ProgFlash__write(memaddr, codebuf, mylen);
+
+
+          section_len -= mylen;
+          memaddr += mylen;
+        }
+    }
+  TosBootP__runApp();
 }
 
 # 40 "msp430/HplUsartControl.nc"
@@ -2742,92 +2665,14 @@ inline static error_t ExtFlashP__UsartControl__isRxIntrPending(void ){
 #line 41
 }
 #line 41
-# 42 "crc.h"
-static inline uint16_t crcByte(uint16_t crc, uint8_t b)
-{
-  uint8_t i;
-
-  crc = crc ^ (b << 8);
-  i = 8;
-  do 
-    if (crc & 0x8000) {
-      crc = (crc << 1) ^ 0x1021;
-      }
-    else {
-#line 52
-      crc = crc << 1;
-      }
-  while (
-#line 53
-  --i);
-
-  return crc;
-}
-
-# 32 "Leds.nc"
-inline static void TosBootP__Leds__set(uint8_t ledsOn){
-#line 32
-  LedsC__Leds__set(ledsOn);
-#line 32
-}
-#line 32
-# 43 "msp430/ProgFlashC.nc"
-static inline error_t ProgFlashC__ProgFlash__write(in_flash_addr_t addr, uint8_t *buf, uint16_t len)
-#line 43
-{
-
-  volatile uint16_t *flashAddr = (uint16_t *)(uint16_t )addr;
-  uint16_t *wordBuf = (uint16_t *)buf;
-  uint16_t i = 0;
-
-
-
-  if (addr < 0xffff - (len >> 1)) {
-      FCTL2 = 0xA500 + 0x0080 + 0x0004;
-      FCTL3 = 0xA500;
-      FCTL1 = 0xA500 + 0x0002;
-      *flashAddr = 0;
-      FCTL1 = 0xA500 + 0x0040;
-      for (i = 0; i < len >> 1; i++, flashAddr++) {
-          if ((uint16_t )flashAddr != ProgFlashC__RESET_ADDR) {
-            *flashAddr = wordBuf[i];
-            }
-          else {
-#line 61
-            *flashAddr = 0x4000;
-            }
-        }
-#line 63
-      FCTL1 = 0xA500;
-      FCTL3 = 0xA500 + 0x0010;
-      return SUCCESS;
-    }
-  return FAIL;
-}
-
-# 32 "ProgFlash.nc"
-inline static error_t TosBootP__ProgFlash__write(in_flash_addr_t addr, uint8_t *buf, in_flash_addr_t len){
-#line 32
-  unsigned char result;
-#line 32
-
-#line 32
-  result = ProgFlashC__ProgFlash__write(addr, buf, len);
-#line 32
-
-#line 32
-  return result;
-#line 32
-}
-#line 32
 # 212 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/chips/msp430/msp430hardware.h"
 static inline  void __nesc_enable_interrupt(void )
 {
    __asm volatile ("eint");}
 
-# 380 "TosBootP.nc"
+# 406 "TosBootP.nc"
   int main(void )
-#line 380
+#line 406
 {
 
   __nesc_disable_interrupt();
@@ -2838,7 +2683,7 @@ static inline  void __nesc_enable_interrupt(void )
   TosBootP__SubInit__init();
   TosBootP__SubControl__start();
 
-  TosBootP__startupSequence();
+  TosBootP__load();
 
   return 0;
 }
@@ -2884,22 +2729,7 @@ static error_t ExtFlashP__StdControl__stop(void )
   return SUCCESS;
 }
 
-# 70 "lib/LedsC.nc"
-static void LedsC__Leds__glow(uint8_t a, uint8_t b)
-#line 70
-{
-  int i;
-
-#line 72
-  for (i = 1536; i > 0; i -= 4) {
-      LedsC__Leds__set(a);
-      wait(i);
-      LedsC__Leds__set(b);
-      wait(1536 - i);
-    }
-}
-
-#line 43
+# 43 "lib/LedsC.nc"
 static void LedsC__Leds__set(uint8_t ledsOn)
 #line 43
 {
@@ -2926,180 +2756,6 @@ static void LedsC__Leds__set(uint8_t ledsOn)
 #line 55
     TOSH_SET_RED_LED_PIN();
     }
-}
-
-#line 58
-static void LedsC__Leds__flash(uint8_t a)
-#line 58
-{
-  uint8_t i;
-#line 59
-  uint8_t j;
-
-#line 60
-  for (i = 3; i; i--) {
-      LedsC__Leds__set(a);
-      for (j = 4; j; j--) 
-        wait(0xffff);
-      LedsC__Leds__set(0);
-      for (j = 4; j; j--) 
-        wait(0xffff);
-    }
-}
-
-# 66 "TosBootP.nc"
-static void TosBootP__startupLeds(void )
-#line 66
-{
-
-  uint8_t output = 0x7;
-  uint8_t i;
-
-  for (i = 3; i; i--, output >>= 1) 
-    TosBootP__Leds__glow(output, output >> 1);
-}
-
-# 84 "/mnt/hgfs/D/code/tinyos-2.1.1/tos/interfaces/StdControl.nc"
-static error_t TosBootP__SubControl__stop(void ){
-#line 84
-  unsigned char result;
-#line 84
-
-#line 84
-  result = ExtFlashP__StdControl__stop();
-#line 84
-  result = ecombine(result, PowerOffC__StdControl__stop());
-#line 84
-
-#line 84
-  return result;
-#line 84
-}
-#line 84
-# 56 "msp430/InternalFlashC.nc"
-static uint8_t InternalFlashC__chooseSegment(void )
-#line 56
-{
-  int8_t vnum0 = * (int8_t *)InternalFlashC__IFLASH_SEG0_VNUM_ADDR;
-  int8_t vnum1 = * (int8_t *)InternalFlashC__IFLASH_SEG1_VNUM_ADDR;
-
-#line 59
-  if (vnum0 == InternalFlashC__IFLASH_INVALID_VNUM) {
-    return 1;
-    }
-  else {
-#line 61
-    if (vnum1 == InternalFlashC__IFLASH_INVALID_VNUM) {
-      return 0;
-      }
-    }
-#line 63
-  return (int8_t )(vnum0 - vnum1) < 0;
-}
-
-# 151 "TosBootP.nc"
-static error_t TosBootP__programImage(ex_flash_addr_t startAddr)
-#line 151
-{
-  uint8_t buf[TOSBOOT_INT_PAGE_SIZE];
-  uint32_t pageAddr;
-#line 153
-  uint32_t newPageAddr;
-  in_flash_addr_t intAddr;
-  in_flash_addr_t secLength;
-  ex_flash_addr_t curAddr;
-
-  if (!TosBootP__verifyImage(startAddr)) {
-    return TosBootP__R_INVALID_IMAGE_ERROR;
-    }
-  curAddr = startAddr + DELUGE_IDENT_SIZE + DELUGE_CRC_BLOCK_SIZE;
-
-  TosBootP__ExtFlash__startRead(curAddr);
-
-  intAddr = TosBootP__extFlashReadAddr();
-  secLength = TosBootP__extFlashReadAddr();
-  curAddr = curAddr + 8;
-
-
-  if (intAddr != 0x4a00) {
-
-
-
-
-
-
-
-      TosBootP__ExtFlash__stopRead();
-      return TosBootP__R_INVALID_IMAGE_ERROR;
-    }
-
-  TosBootP__ExtFlash__stopRead();
-
-  while (secLength) {
-
-      pageAddr = newPageAddr = intAddr / TOSBOOT_INT_PAGE_SIZE;
-
-      TosBootP__ExtFlash__startRead(curAddr);
-
-      do {
-
-
-          if (secLength == 0xffffffff) {
-              TosBootP__ExtFlash__stopRead();
-              return FAIL;
-            }
-
-          buf[(uint16_t )intAddr % TOSBOOT_INT_PAGE_SIZE] = TosBootP__ExtFlash__readByte();
-          intAddr++;
-#line 199
-          curAddr++;
-
-          if (--secLength == 0) {
-              intAddr = TosBootP__extFlashReadAddr();
-              secLength = TosBootP__extFlashReadAddr();
-              curAddr = curAddr + 8;
-            }
-
-          newPageAddr = intAddr / TOSBOOT_INT_PAGE_SIZE;
-        }
-      while (pageAddr == newPageAddr && secLength);
-      TosBootP__ExtFlash__stopRead();
-
-      TosBootP__Leds__set(pageAddr);
-
-
-
-      if (
-#line 215
-      TosBootP__ProgFlash__write(pageAddr * TOSBOOT_INT_PAGE_SIZE, buf, 
-      TOSBOOT_INT_PAGE_SIZE) == FAIL) {
-          return TosBootP__R_PROGRAMMING_ERROR;
-        }
-    }
-
-  return TosBootP__R_SUCCESS;
-}
-
-#line 100
-static bool TosBootP__verifyBlock(ex_flash_addr_t crcAddr, ex_flash_addr_t startAddr, uint16_t len)
-{
-  uint16_t crcTarget;
-#line 102
-  uint16_t crcTmp;
-
-
-  TosBootP__ExtFlash__startRead(crcAddr);
-  crcTarget = (uint16_t )(TosBootP__ExtFlash__readByte() & 0xff) << 8;
-  crcTarget |= (uint16_t )(TosBootP__ExtFlash__readByte() & 0xff);
-  TosBootP__ExtFlash__stopRead();
-
-
-  TosBootP__ExtFlash__startRead(startAddr);
-  for (crcTmp = 0; len; len--) 
-    crcTmp = crcByte(crcTmp, TosBootP__ExtFlash__readByte());
-  TosBootP__ExtFlash__stopRead();
-
-  return crcTarget == crcTmp;
 }
 
 # 84 "stm25p/ExtFlashP.nc"
@@ -3144,66 +2800,29 @@ static uint8_t ExtFlashP__ExtFlash__readByte(void )
   return ExtFlashP__UsartControl__rx();
 }
 
-# 76 "TosBootP.nc"
-static in_flash_addr_t TosBootP__extFlashReadAddr(void )
-#line 76
+# 97 "TosBootP.nc"
+static uint16_t TosBootP__extFlashReadWord(void )
+#line 97
 {
-  in_flash_addr_t result = 0;
+  uint16_t result = 0;
   int8_t i;
 
-#line 79
-  for (i = 3; i >= 0; i--) 
-    result |= ((in_flash_addr_t )TosBootP__ExtFlash__readByte() & 0xff) << i * 8;
+#line 100
+  for (i = 0; i <= 1; i++) 
+    result |= ((uint16_t )TosBootP__ExtFlash__readByte() & 0xff) << i * 8;
   return result;
 }
 
-# 66 "msp430/InternalFlashC.nc"
-static error_t InternalFlashC__InternalFlash__write(void *addr, void *buf, uint16_t size)
-#line 66
+#line 89
+static uint32_t TosBootP__extFlashReadDWord(void )
+#line 89
 {
+  uint32_t result = 0;
+  int8_t i;
 
-  volatile int8_t *newPtr;
-  int8_t *oldPtr;
-  int8_t *bufPtr = (int8_t *)buf;
-  int8_t version;
-  uint16_t i;
-
-  addr += InternalFlashC__IFLASH_OFFSET;
-  newPtr = oldPtr = (int8_t *)InternalFlashC__IFLASH_OFFSET;
-  if (InternalFlashC__chooseSegment()) {
-      oldPtr += InternalFlashC__IFLASH_SIZE;
-    }
-  else {
-      addr += InternalFlashC__IFLASH_SIZE;
-      newPtr += InternalFlashC__IFLASH_SIZE;
-    }
-
-  FCTL2 = 0xA500 + 0x0080 + 0x0004;
-  FCTL3 = 0xA500;
-  FCTL1 = 0xA500 + 0x0002;
-  *newPtr = 0;
-  FCTL1 = 0xA500 + 0x0040;
-
-  for (i = 0; i < InternalFlashC__IFLASH_SIZE - 1; i++, newPtr++, oldPtr++) {
-      if ((uint16_t )newPtr < (uint16_t )addr || (uint16_t )addr + size <= (uint16_t )newPtr) {
-        *newPtr = *oldPtr;
-        }
-      else {
-#line 94
-        *newPtr = * bufPtr++;
-        }
-    }
-#line 96
-  version = *oldPtr + 1;
-  if (version == InternalFlashC__IFLASH_INVALID_VNUM) {
-    version++;
-    }
-#line 99
-  *newPtr = version;
-
-  FCTL1 = 0xA500;
-  FCTL3 = 0xA500 + 0x0010;
-
-  return SUCCESS;
+#line 92
+  for (i = 0; i <= 3; i++) 
+    result |= ((uint32_t )TosBootP__ExtFlash__readByte() & 0xff) << i * 8;
+  return result;
 }
 

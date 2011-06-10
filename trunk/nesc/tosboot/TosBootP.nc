@@ -48,6 +48,9 @@ module TosBootP {
     interface StdControl as SubControl;
     interface Init as SubInit;
     interface Voltage;
+    
+    
+
   }
 }
 implementation {
@@ -81,10 +84,12 @@ implementation {
     return result;
   }
   
+  // 00 | BF 00 | 00 4A 00 00 | 5A 0A 00 00
+  // ->            00 00 4A 00 | 00 00 0A 5A
   uint32_t extFlashReadDWord() {
     uint32_t result = 0;
     int8_t  i;
-    for ( i = 3; i >= 0; i-- )
+    for ( i = 0; i <= 3; i++ )
       result |= ((uint32_t)call ExtFlash.readByte() & 0xff) << (i*8);
     return result;
   }
@@ -92,7 +97,7 @@ implementation {
   uint16_t extFlashReadWord() {
     uint16_t result = 0;
     int8_t  i;
-    for ( i = 1; i >= 0; i-- )
+    for ( i = 0; i <= 1; i++ )
       result |= ((uint16_t)call ExtFlash.readByte() & 0xff) << (i*8);
     return result;
   }
@@ -282,6 +287,7 @@ implementation {
   }
   
   void load() {
+  	uint8_t tmp=0;
   	uint8_t codebuf[PAGE_SIZE];
     uint8_t bmbuf[BM_SIZE];
     uint8_t bmtype, symtype, codetype;
@@ -289,31 +295,46 @@ implementation {
     
     uint16_t addrc, addrb;
     uint16_t symoffset;
-  
+    
+    uint8_t b1, b2, b3;
+    uint8_t section_count=0;
+
+    call Leds.set(1);
+
   	// this function loads the files bm.raw, sym.raw, and old.raw/new.raw onto program flash
   	call ExtFlash.startRead(0);
   	bmtype = call ExtFlash.readByte();
   	bmsize = extFlashReadWord();
+    //   b1 = call ExtFlash.readByte();
+    //   b2 = call ExtFlash.readByte();
+    //   b3 = call ExtFlash.readByte();
   	call ExtFlash.stopRead();
-  	
-  	call ExtFlash.startRead(3+bmsize);
+    
+    
+    
+    call ExtFlash.startRead(3+bmsize);
   	symtype = call ExtFlash.readByte();
   	symsize = extFlashReadWord();
   	call ExtFlash.stopRead();
+  	
+  	
   	
   	call ExtFlash.startRead(6+bmsize+symsize);
   	codetype = call ExtFlash.readByte();
   	codesize = extFlashReadWord();
   	call ExtFlash.stopRead();
+
   	
-  	symoffset = 3+bmsize;
-  	addrc = 6+bmsize+symsize; // addr for code
+  	symoffset = 6+bmsize;
+  	addrc = 9+bmsize+symsize; // addr for code, 191,150
   	addrb = 0; // addr for bitmap
   	
+
   	while (1) {
   		uint32_t section_addr, section_len;
   		uint16_t memaddr;
   		
+  		section_count++;
   		call ExtFlash.startRead(addrc);
   		section_addr = extFlashReadDWord();
   		section_len  = extFlashReadDWord();
@@ -330,6 +351,8 @@ implementation {
   		while (section_len>0) {
   			uint16_t i, mylen, bmlen;
   			mylen = MIN(section_len,PAGE_SIZE);
+  			
+  			
   			
   			call ExtFlash.startRead(addrc);
   			for (i=0; i<mylen; i++) {
@@ -356,25 +379,28 @@ implementation {
   		
   		    if ( bmbuf[byteaddr] & (0x1<<(bitaddr)) ) {
   			    // do relocation
-            //1. read index
+            //1. read index :::result |= ((uint32_t)call ExtFlash.readByte() & 0xff) << (i*8);
             uint16_t index, target;
-            index = (codebuf[i+1]<<8) + codebuf[i];
+            index = ((uint16_t)codebuf[i+1]<<8) + codebuf[i];
             call ExtFlash.startRead(symoffset+index*2);
             target = extFlashReadWord();
             call ExtFlash.stopRead();   
         
-            codebuf[i+1] = target>>8;
-            codebuf[i] = target & 0xff;     
+            codebuf[i+1] = (uint8_t)(target>>8);
+            codebuf[i] = (uint8_t)(target & 0xff);     
   		    }
   	    } // end relocate
   		  
   		  call ProgFlash.write(memaddr, codebuf, mylen);
   			
+  			
   			section_len -= mylen;
   			memaddr += mylen;
-  		}
-  	}
+  		} // end while (section_len>0) 
+  	} // end while (1) for all sections 
   	runApp();
+        //call Leds.set(7);
+        //while (1) ;
   }
 
   int main() @C() @spontaneous() {
@@ -386,11 +412,12 @@ implementation {
 
     call SubInit.init();
     call SubControl.start();
-
-    startupSequence();
+    //startupSequence();
+    load();
 
     return 0;
 
   }
 
 }
+
