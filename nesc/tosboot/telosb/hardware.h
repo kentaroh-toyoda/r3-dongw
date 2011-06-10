@@ -28,8 +28,8 @@
  * @author Jonathan Hui <jwhui@cs.berkeley.edu>
  */
 
-#ifndef __HARDWARE_H__
-#define __HARDWARE_H__
+#ifndef _H_hardware_h
+#define _H_hardware_h
 
 #include "msp430hardware.h"
 
@@ -85,4 +85,5 @@ void TOSH_SET_PIN_DIRECTIONS(void)
   P6OUT = 0x00;
 }
 
-#endif
+#endif // _H_hardware_h
+
