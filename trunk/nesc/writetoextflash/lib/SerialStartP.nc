@@ -94,10 +94,13 @@ implementation {
       case CMD_START:
         if (state == S_IDLE) {
           state = S_BUSY;
-          signal SerialStart.start();
-          sendAck(SUCCESS);
-          daddr = 0; 
           type = pkt->len; // for cmd pkt, len indicates the type
+          if (type == 0) {
+            call SubBlockWrite_1.erase();
+          }
+          else if (type == 2) {
+          	call SubBlockWrite_3.erase();
+          }
         } else {
           state = S_IDLE;
           sendAck(FAIL);
@@ -106,12 +109,16 @@ implementation {
       case CMD_STOP:
         if (state != S_IDLE) {
           state = S_IDLE;
-          signal SerialStart.stop();
-          sendAck(SUCCESS);
+          
           
           //if (curaddr==2709)
           //	call Leds.led1On();
-          	
+          if (type == 0) {
+          	call SubBlockWrite_1.sync();
+          }
+          else if (type == 2) {
+          	call SubBlockWrite_3.sync();
+          }
           curaddr = 0;
         } else {
         	sendAck(FAIL);
@@ -122,18 +129,18 @@ implementation {
           //memcpy((void *)recvPkt->offset, recvPkt->data, recvPkt->len);
           // where do we store para: addr,buf,len
           call SubBlockWrite_1.write(curaddr, pkt->data, pkt->len);
-          sendAck(SUCCESS);
-          curaddr += pkt->len;
-          call Leds.led0Toggle();
+          //sendAck(SUCCESS);
+          //curaddr += pkt->len;
+          //call Leds.led0Toggle();
         } 
         else if (type == 1) { // NEW
         	
         }
         else if (type == 2) { // DELTA ...
         	call SubBlockWrite_3.write(curaddr, pkt->data, pkt->len);
-        	sendAck(SUCCESS);
-        	curaddr += pkt->len;
-        	call Leds.led2Toggle();
+        	//sendAck(SUCCESS);
+        	//curaddr += pkt->len;
+        	//call Leds.led2Toggle();
         }
         else {
           sendAck(FAIL);
@@ -182,9 +189,20 @@ implementation {
     }
   }
   event void SubBlockRead_1.computeCrcDone(storage_addr_t addr, storage_len_t len, uint16_t crc, error_t error) {}
-  event void SubBlockWrite_1.writeDone(storage_addr_t addr, void* buf, storage_len_t len, error_t error) {}
-  event void SubBlockWrite_1.eraseDone(error_t error) {}
-  event void SubBlockWrite_1.syncDone(error_t error) {}
+  event void SubBlockWrite_1.writeDone(storage_addr_t addr, void* buf, storage_len_t len, error_t error) {
+  	sendAck(SUCCESS);
+    curaddr += len;
+    call Leds.led0Toggle();
+  }
+  event void SubBlockWrite_1.eraseDone(error_t error) {
+    signal SerialStart.start();
+    sendAck(SUCCESS);
+    daddr = 0; 	
+  }
+  event void SubBlockWrite_1.syncDone(error_t error) {
+    signal SerialStart.stop();
+    sendAck(SUCCESS);	
+  }
   
   event void SubBlockRead_2.readDone(storage_addr_t addr, void* buf, storage_len_t len, error_t error) {}
   event void SubBlockRead_2.computeCrcDone(storage_addr_t addr, storage_len_t len, uint16_t crc, error_t error) {}
@@ -292,6 +310,13 @@ implementation {
   }
   event void SubBlockWrite_3.writeDone(storage_addr_t addr, void* buf, storage_len_t len, error_t error) {}
   event void SubBlockRead_3.computeCrcDone(storage_addr_t addr, storage_len_t len, uint16_t crc, error_t error) {}
-  event void SubBlockWrite_3.eraseDone(error_t error) {}
-  event void SubBlockWrite_3.syncDone(error_t error) {}
+  event void SubBlockWrite_3.eraseDone(error_t error) {
+    signal SerialStart.start();
+    sendAck(SUCCESS);
+    daddr = 0; 		
+  }
+  event void SubBlockWrite_3.syncDone(error_t error) {
+    signal SerialStart.stop();
+    sendAck(SUCCESS);	
+  }
 }
