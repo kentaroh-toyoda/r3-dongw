@@ -327,7 +327,7 @@ implementation {
   	
   	symoffset = 6+bmsize;
   	addrc = 9+bmsize+symsize; // addr for code, 191,150
-  	addrb = 0; // addr for bitmap
+  	addrb = 3; // addr for bitmap
   	
 
   	while (1) {
@@ -361,7 +361,8 @@ implementation {
   		  addrc += mylen;
   		  call ExtFlash.stopRead();
   		  
-  		  bmlen = MIN((mylen+15)/16, BM_SIZE); 
+  		  //bmlen = MIN((mylen+15)/16, BM_SIZE); 
+                  bmlen = (mylen/2+7) / 8;
   		  
   		  call ExtFlash.startRead(addrb);
   		  for (i=0; i<bmlen; i++) {
