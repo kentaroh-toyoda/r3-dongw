@@ -235,10 +235,18 @@ void genbitmap()
 				offset_in_byte = 0;
 			}
 		}
+		
+		if (offset_in_byte>0) {
+				// write to file
+				fwrite(&byte, 1, 1, bm);
+		}
+		
+		
 		fseek(raw, size, SEEK_CUR);
 		
 		
 		if (address==0 && size==0) {
+			
 			break; // its the end of file
 		}
 	}
@@ -723,7 +731,7 @@ FILE *symraw;
 		if (option==0) fwrite(instr, 2, 1, out);
 		
 		// (2) Write to rel
-		myloc.r_offset = offset; 
+		myloc.r_offset = rela.r_offset; 
 		fseek(in, offset, SEEK_SET);
 		fread(&myloc.r_addr, 2, 1, in);
 		
@@ -798,7 +806,7 @@ FILE *symraw;
 		if (option==0) fwrite(instr, 2, 1, out);
 		
 		// (2) Write to rel
-		myloc.r_offset = offset; 
+		myloc.r_offset = rela.r_offset; 
 		fseek(in, offset, SEEK_SET);
 		fread(&myloc.r_addr, 2, 1, in);
 		
