@@ -3,3 +3,5 @@
 3. patch.c好像有问题
 4. mote上patch和load的过程需要验证; 并评测其overhead
 5. 集成测试
+6. Blink-base已经测试成功
+7. diff有问题，比较main.bin和prog.bin(调用ProgWrite，开头为0)有问题
