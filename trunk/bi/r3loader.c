@@ -46,6 +46,13 @@ void ProgFlash_write(int memaddr, void *codebuf, int mylen) {
 	fwrite(codebuf, mylen, 1, progfile);
 }
 
+void ProgFlash_write2(int memaddr, void *codebuf, int mylen) {
+	memaddr -= 0x4a00;
+	fseek(progfile, memaddr, SEEK_SET);
+	fwrite(codebuf, mylen, 1, progfile);
+}
+
+
 void load() {
   	uint8_t tmp=0;
   	uint8_t codebuf[PAGE_SIZE];
@@ -58,6 +65,8 @@ void load() {
     
     uint8_t b1, b2, b3;
     uint8_t section_count=0;
+	
+	uint8_t first=1;
 
   	// this function loads the files bm.raw, sym.raw, and old.raw/new.raw onto program flash
     ExtFlash_startRead(0);
@@ -85,7 +94,7 @@ void load() {
   	
   	symoffset = 6+bmsize;
   	addrc = 9+bmsize+symsize; // addr for code, 191,150
-  	addrb = 0; // addr for bitmap
+  	addrb = 3; // addr for bitmap
   	
 
   	while (1) {
@@ -104,6 +113,8 @@ void load() {
   		addrc += 8;
   		addrb += 8;
   		
+		
+		
   		memaddr = section_addr;
   		
   		while (section_len>0) {
@@ -119,7 +130,8 @@ void load() {
   		  addrc += mylen;
   		  ExtFlash_stopRead();
   		  
-  		  bmlen = MIN((mylen+15)/16, BM_SIZE); 
+  		  //bmlen = MIN((mylen+15)/16, BM_SIZE); 
+		  bmlen = (mylen/2+7) / 8;
   		  
   		  ExtFlash_startRead(addrb);
   		  for (i=0; i<bmlen; i++) {
@@ -149,7 +161,7 @@ void load() {
   		    }
   	    } // end relocate
   		  
-  		  ProgFlash_write(memaddr, codebuf, mylen);
+  		  ProgFlash_write2(memaddr, codebuf, mylen);
   			
   			
   			section_len -= mylen;
@@ -164,7 +176,7 @@ void load() {
 int main(int argc, char** argv)
 {
 	extfile = fopen(argv[1], "rb");
-	progfile = fopen("prog.raw", "wb");
+	progfile = fopen("prog.bin", "wb");
 	
 	load();
 	
