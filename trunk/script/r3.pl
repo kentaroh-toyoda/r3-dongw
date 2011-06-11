@@ -16,12 +16,14 @@ print "Update version is in $update\n";
 
 ## compile: here we use some temp code
 $info = `echo "CFLAGS += -Wl,-q" > $base/mfr`;
+$info = `echo "CFLAGS += -Wl,-section-start=.text=0x4a00" >> $base/mfr`;
 $info = `cat $base/Makefile >> $base/mfr`;
 $cmd = "cd $base; make telosb -f mfr; cd ../script";
 print "$cmd\n";
 $info = `$cmd`;
 
 $info = `echo "CFLAGS += -Wl,-q" > $update/mfr`;
+$info = `echo "CFLAGS += -Wl,-section-start=.text=0x4a00" >> $update/mfr`;
 $info = `cat $update/Makefile >> $update/mfr`;
 $cmd = "cd $update; make telosb -f mfr; cd ../script";
 print "$cmd\n";
