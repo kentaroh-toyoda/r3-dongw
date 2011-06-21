@@ -104,6 +104,9 @@ while (<cc>) {
 		## rather we produce the ihex file directly. 
 		## so we start from bi1.txt from the native code, then try to fix the references according to Hermes
 		## Hermes will replace references in calls to jump table entry address preserved in func.txt
+		
+		## Another important thing is that Hermes uses different compilation modes for differnet change cases,
+		## even for the same benchmark, so we need to compute psi for each change case.
 				
 		print "<<< $psi_n $psi_h $psi_bi0 $psi_bi1 $psi_bi2\n";
 	}
