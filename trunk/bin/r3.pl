@@ -51,9 +51,12 @@ while (<cc>) {
 		&excmd("$bi 2 $dir1 >$dir1/build/telosb/bi2.txt");
 		&excmd("$bi 2 $dir2 >$dir2/build/telosb/bi2.txt");
 		
-		# 5. gen out.ihex from out.exe
+		# 5. gen out.ihex from out.exe and copy out.exe to out-bi2.exe (for psi)
 		&excmd("msp430-objcopy --output-target=ihex $dir1/build/telosb/out.exe $dir1/build/telosb/out.ihex");
 		&excmd("msp430-objcopy --output-target=ihex $dir2/build/telosb/out.exe $dir2/build/telosb/out.ihex");
+		&excmd("cp $dir1/build/telosb/out.exe $dir1/build/telosb/out-bi2.exe");
+		&excmd("cp $dir2/build/telosb/out.exe $dir2/build/telosb/out-bi2.exe");
+		
 		
 		# 6. out.ihex -> out.raw
 		&excmd("perl ./hex2raw.pl $dir1/build/telosb/out.ihex $dir1/build/telosb/out.raw > $dir1/hex2raw-out.log");
