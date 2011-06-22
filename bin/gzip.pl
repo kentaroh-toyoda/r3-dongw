@@ -17,7 +17,7 @@ while (<bm>) {
 		&excmd("perl ./hex2raw.pl $dir/build/telosb/main-n.ihex $dir/build/telosb/main-n.raw > $dir/hex2raw-n.log");
 		$rawsize = -s "$dir/build/telosb/main-n.raw";
 		
-		&excmd("gzip -f -1 $dir/build/telosb/main-n.raw"); # gen main-n.raw.gz
+		&excmd("gzip -f -9 $dir/build/telosb/main-n.raw"); # gen main-n.raw.gz
 		$gzsize = -s "$dir/build/telosb/main-n.raw.gz";
 		
 		print "<<< $_ $rawsize $gzsize\n";

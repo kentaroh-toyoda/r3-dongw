@@ -86,18 +86,18 @@ while (<cc>) {
 		$psi_h = 0;
 		
 		## out.exe is transformed from main.exe inflated with 0;
-		&excmd("$si $dir1/build/telosb/out-bi0.exe >si-bi0.txt");
-		&excmd("$si $dir2/build/telosb/out-bi0.exe >si-bi0.txt");
+		&excmd("$si $dir1/build/telosb/out-bi0.exe >$dir1/build/telosb/si-bi0.txt");
+		&excmd("$si $dir2/build/telosb/out-bi0.exe >$dir1/build/telosb/si-bi0.txt");
 		$psi_bi0 = &getpsi("$dir1/build/telosb/si-bi0.txt", "$dir2/build/telosb/si-bi0.txt");
 		
 		## out.exe is transformed from main.exe with chained reference
-		&excmd("$si $dir1/build/telosb/out-bi1.exe >si-bi1.txt");
-		&excmd("$si $dir2/build/telosb/out-bi1.exe >si-bi1.txt");
+		&excmd("$si $dir1/build/telosb/out-bi1.exe >$dir1/build/telosb/si-bi1.txt");
+		&excmd("$si $dir2/build/telosb/out-bi1.exe >$dir1/build/telosb/si-bi1.txt");
 		$psi_bi1 = &getpsi("$dir1/build/telosb/si-bi1.txt", "$dir2/build/telosb/si-bi1.txt");
 		
 		## out.exe is transformed from main.exe with symbol table indexes
-		&excmd("$si $dir1/build/telosb/out-bi2.exe >si-bi2.txt");
-		&excmd("$si $dir2/build/telosb/out-bi2.exe >si-bi2.txt");
+		&excmd("$si $dir1/build/telosb/out-bi2.exe >$dir1/build/telosb/si-bi2.txt");
+		&excmd("$si $dir2/build/telosb/out-bi2.exe >$dir1/build/telosb/si-bi2.txt");
 		$psi_bi2 = &getpsi("$dir1/build/telosb/si-bi2.txt", "$dir2/build/telosb/si-bi2.txt");
 		
 		## for Hermes, things will be difficult because our implementation does not produce an ELF

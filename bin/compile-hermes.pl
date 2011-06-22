@@ -30,6 +30,12 @@ sub domake() {
 	
 	my $mfh = sprintf("mfh-$no-0x%x", $bss);
 	
+	
+	&excmd("echo CFLAGS += -Wl,-section-start=.text=0x4a00 > $dir/$mfh");
+	
+	&excmd("echo CFLAGS += -Wl,-q >> $dir/$mfh"); ## note: otherwise we cannot compute the psi. This should not affect the delta size of Hermes
+	
+	
 	$cmd = sprintf("echo CFLAGS+=-Wl,--section-start=.bss=0x%x >> $dir/$mfh", $bss);
 	&excmd($cmd);
 	

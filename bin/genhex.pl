@@ -71,7 +71,7 @@ while (<fd>) {
       #for ($i=0; $i<@rs; $i++) { print "$i $rs[$i];"; }
       #print "\n";
       # index 8 is the label in hex
-      my $l = $rs[7]; # #0x????
+      my $l = $rs[-1]; # #0x????
       
       #print "l=$l\n";
       
@@ -172,7 +172,7 @@ while (<fd2>) {
   	# DW: Is this correct?
       my @rs = split /[:;\s]+/, $_;  
       # index 8 is the label in hex
-      my $l = $rs[7];
+      my $l = $rs[-1];
       my @l2 = split /x/, $l;
       my $f = &find($l2[1]);
       my $loc = hex("$rs[1]")+2;

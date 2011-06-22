@@ -132,7 +132,8 @@ while (<cc>) {
   	@rs = split;
   	$no = $rs[0];
   	$dir1 = "../benchmarks/$rs[1]";
-		$dir2 = "../benchmarks/$rs[2]";
+		$dir2 = "../benchmarks/$rs[2]";      
+		$bmk1 = $rs[1]; $bmk2 = $rs[2];
 		
 		print ">>>processing case\#$no: $dir1 -> $dir2\n";
 		
@@ -160,7 +161,7 @@ while (<cc>) {
 		# 3. diff
 		&excmd("$diff $dir1/build/telosb/out-h.raw $dir2/build/telosb/out-h.raw ../benchmarks/delta-$no.raw > ../benchmarks/hermes-$no.log");
 		$deltasize = -s "../benchmarks/delta-$no.raw";
-		print "<<< $rs[1] $rs[2] $deltasize $psi\n";	
+		print "<<< $bmk1 $bmk2 $deltasize $psi\n";	
 	}
 }
 close cc;
