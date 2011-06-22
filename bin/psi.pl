@@ -82,33 +82,10 @@ while (<cc>) {
 		
 		print ">>>processing case\#$no: $dir1 -> $dir2\n";
 		
-		$psi_n = &getpsi("$dir1/build/telosb/bi1.txt", "$dir2/build/telosb/bi1.txt");
-		$psi_h = 0;
-		
-		## out.exe is transformed from main.exe inflated with 0;
-		&excmd("$si $dir1/build/telosb/out-bi0.exe >$dir1/build/telosb/si-bi0.txt");
-		&excmd("$si $dir2/build/telosb/out-bi0.exe >$dir1/build/telosb/si-bi0.txt");
-		$psi_bi0 = &getpsi("$dir1/build/telosb/si-bi0.txt", "$dir2/build/telosb/si-bi0.txt");
-		
-		## out.exe is transformed from main.exe with chained reference
-		&excmd("$si $dir1/build/telosb/out-bi1.exe >$dir1/build/telosb/si-bi1.txt");
-		&excmd("$si $dir2/build/telosb/out-bi1.exe >$dir1/build/telosb/si-bi1.txt");
-		$psi_bi1 = &getpsi("$dir1/build/telosb/si-bi1.txt", "$dir2/build/telosb/si-bi1.txt");
-		
-		## out.exe is transformed from main.exe with symbol table indexes
-		&excmd("$si $dir1/build/telosb/out-bi2.exe >$dir1/build/telosb/si-bi2.txt");
-		&excmd("$si $dir2/build/telosb/out-bi2.exe >$dir1/build/telosb/si-bi2.txt");
-		$psi_bi2 = &getpsi("$dir1/build/telosb/si-bi2.txt", "$dir2/build/telosb/si-bi2.txt");
-		
-		## for Hermes, things will be difficult because our implementation does not produce an ELF
-		## rather we produce the ihex file directly. 
-		## so we start from bi1.txt from the native code, then try to fix the references according to Hermes
-		## Hermes will replace references in calls to jump table entry address preserved in func.txt
-		
-		## Another important thing is that Hermes uses different compilation modes for differnet change cases,
-		## even for the same benchmark, so we need to compute psi for each change case.
+		## max PSI: should be the same to R2??
+		#$psi = &getmaxpsi();
 				
-		print "<<< $psi_n $psi_h $psi_bi0 $psi_bi1 $psi_bi2\n";
+		print "<<< $psi\n";
 	}
 }
 close cc;
