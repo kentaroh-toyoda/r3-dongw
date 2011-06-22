@@ -56,8 +56,7 @@ sub getpsi() {
 	$match=0;
 	for ($i=0; $i<@newsymname; $i++) {
 		for ($j=0; $j<@oldsymname; $j++) {
-			if ( ($newsymname[$i] eq $oldsymname[$j]) &&
-			     ($newsymaddr[$i] == $oldsymaddr[$j]) ) 
+			if ( $newsymname[$i] eq $oldsymname[$j] ) 
 			{
 			  $match++;
 			  last;	
@@ -79,13 +78,16 @@ while (<cc>) {
   	$no = $rs[0];
   	$dir1 = "../benchmarks/$rs[1]";
 		$dir2 = "../benchmarks/$rs[2]";
+		$bmk1 = $rs[1]; $bmk2 = $rs[2];
 		
 		print ">>>processing case\#$no: $dir1 -> $dir2\n";
 		
 		## max PSI: should be the same to R2??
-		#$psi = &getmaxpsi();
+		&excmd("$si $dir1/build/telosb/main-r2.exe >$dir1/build/telosb/si-n.txt");
+		&excmd("$si $dir2/build/telosb/main-r2.exe >$dir2/build/telosb/si-n.txt");
+		$psi = &getpsi("$dir1/build/telosb/si-n.txt", "$dir2/build/telosb/si-n.txt");
 				
-		print "<<< $psi\n";
+		print "<<< $bmk1 $bmk2 $psi\n";
 	}
 }
 close cc;

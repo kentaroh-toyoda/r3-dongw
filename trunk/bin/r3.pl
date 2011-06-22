@@ -70,6 +70,43 @@ sub getpsi() {
 	return $match / ($oldcnt>$newcnt ? $oldcnt : $newcnt);
 }
 
+sub fix() {
+	my ($t, $r) = @_;
+	my @tlines=();
+	my @rlines=();
+	my $tcnt;
+	my $rcnt;
+	
+	open ft, "<$t" or die "cannot open $t";
+	while (<ft>) {
+		chomp;
+		push @tlines, $_;
+	}	
+	close ft;
+	open fr, "<$r" or die "cannot open $r";
+	while (<fr>) {
+		chomp;
+		push @rlines, $_;
+	}
+	close fr;
+	
+	$tcnt = @tlines;
+	$rcnt = @rlines;
+	if ($tcnt != $rcnt) {
+		print "si file not match\n";
+		exit;
+	}
+	open ft, ">$t" or die "cannot open $t for write";
+	for (my $i=0; $i<$tcnt; $i++) {
+	  my @rt = split / /, $tlines[$i];
+	  my @rr = split / /, $rlines[$i];
+	  $rt[1] = $rr[1];
+	  my $line = join ' ', @rt;
+	  print ft "$line\n";
+  }
+	close ft;	
+}
+
 open cc, "<changecases.lst" or die "cannot open changecases.lst\n";
 while (<cc>) {
 	chomp;
@@ -131,6 +168,9 @@ while (<cc>) {
 		# 9. psi
 		&excmd("$si $dir1/build/telosb/out-bi2.exe >$dir1/build/telosb/si-bi2.txt");
 		&excmd("$si $dir2/build/telosb/out-bi2.exe >$dir2/build/telosb/si-bi2.txt");
+		&fix("$dir1/build/telosb/si-bi2.txt", "$dir1/build/telosb/si-n.txt");
+		&fix("$dir2/build/telosb/si-bi2.txt", "$dir2/build/telosb/si-n.txt");
+		
 		$psi_bi2 = &getpsi("$dir1/build/telosb/si-bi2.txt", "$dir2/build/telosb/si-bi2.txt");
 		
 		$outsize = -s "../benchmarks/delta-out-$no.raw";
