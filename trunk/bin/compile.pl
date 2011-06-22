@@ -16,9 +16,10 @@ while (<bm>) {
 		# 1. make clean
 		&excmd("cd $dir; make clean");
 		
-		
-		# 2. make target from Makefile
-		&excmd("cd $dir; make telosb");
+		# 2. make target from Makefile. text starting at 4a00
+		$info = `echo "CFLAGS += -Wl,-section-start=.text=0x4a00" > $dir/mfn`;
+		$info = `cat $dir/Makefile >> $dir/mfn`;
+		&excmd("cd $dir; make telosb -f mfn");
 		&excmd("mv $dir/build/telosb/main.exe $dir/build/telosb/main-n.exe");
 		&excmd("mv $dir/build/telosb/main.ihex $dir/build/telosb/main-n.ihex");
 		&excmd("msp430-objdump -zhD $dir/build/telosb/main-n.exe > $dir/build/telosb/main-n.asm");
