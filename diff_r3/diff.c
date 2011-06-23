@@ -4,11 +4,11 @@
 #include <time.h>
 
 #define alpha 3
-#define beta  7
+#define beta  5
 
 #define p (beta-alpha)
 #define b 256
-#define q 257
+#define q 2570
 
 #define dbgflag 0
 
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 	freefootprint();
 	free(ommap);
 	free(nmmap);
-//	free(dmmap);
+	free(dmmap);
 	free(opt); free(opt0); free(opt1);
 	free(cmds); free(cmds0); free(cmds1);
 	free(s0); free(s1);
@@ -354,7 +354,7 @@ void printcmds(int t, int i)
 	printcmds(s0[ss0[i]+1], ss0[i]);
 	switch (cmds0[i].type) {
     case 0:
-	  printf("cmds0: ADD[%d] New[%d] at Mem[%4x] opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, memaddr(cmds0[i].inew), i, opt0[i]);
+	  printf("cmds0: ADD[%d] New[%d] opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, i, opt0[i]);
 	  if (i==1 || s0[ss0[i]+1]==1) { // start or last cmd is copy
 		//fwrite(&cmds0[i].type, 1, 1, delta);
 		//fwrite(&cmds0[i].length, 2, 1, delta);
@@ -385,8 +385,8 @@ void printcmds(int t, int i)
 	  //fwrite(&cmds0[i].iold, 2, 1, delta);
 	  dmmap[dx] = cmds0[i].type;
 	  memcpy(&dmmap[dx+1], &cmds0[i].length, 2);
-	  memcpy(&dmmap[dx+3], &cmds0[i].inew, 2);
-	  memcpy(&dmmap[dx+5], &cmds0[i].iold, 2);
+//	  memcpy(&dmmap[dx+3], &cmds0[i].inew, 2);
+	  memcpy(&dmmap[dx+3], &cmds0[i].iold, 2);
 	  dx += beta;
 //	  printf("dx=%d\n",dx);
 	  if (alendx>0) {
@@ -406,7 +406,7 @@ void printcmds(int t, int i)
 	printcmds(s1[ss1[i]+1], ss1[i]);
 	switch (cmds1[i].type) {
     case 0:
-	  printf("cmds1: ADD[%d] New[%d] at Mem[%4x] opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, memaddr(cmds1[i].inew), i, opt1[i]);
+	  printf("cmds1: ADD[%d] New[%d] opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, i, opt1[i]);
 	  if (i==1 || s1[ss1[i]+1]==1) { // start or last cmd is copy
 		//fwrite(&cmds0[i].type, 1, 1, delta);
 		//fwrite(&cmds0[i].length, 2, 1, delta);
@@ -434,8 +434,8 @@ void printcmds(int t, int i)
 				   i, opt1[i]);
 	  dmmap[dx] = cmds1[i].type;
 	  memcpy(&dmmap[dx+1], &cmds1[i].length, 2);
-	  memcpy(&dmmap[dx+3], &cmds1[i].inew, 2);
-	  memcpy(&dmmap[dx+5], &cmds1[i].iold, 2);
+//	  memcpy(&dmmap[dx+3], &cmds1[i].inew, 2);
+	  memcpy(&dmmap[dx+3], &cmds1[i].iold, 2);
 	  dx += beta;
 //	  printf("dx=%d\n",dx);
 	  if (alendx>0) {
