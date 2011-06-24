@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define COPY_COST 8 //7
 #define COPYX_COST 9
@@ -52,19 +53,19 @@ void PrintMessage(int i);
 Segment FindJ(int i);
 
 // helper functions
-int testeq(unsigned char **Table_C, int i, int j)
+int testeq(unsigned char **Table, int i, int j)
 {
-  unsigned char byte = Table_C[i][j>>3];
+  unsigned char byte = Table[i][j>>3];
   return byte & (0x1<<(j&0x7));
 }
-void seteq(unsigned char **Table_C, int i, int j)
+void seteq(unsigned char **Table, int i, int j)
 {
-  Table_C[i][j>>3] |= (0x1<<(j&0x7));
+  Table[i][j>>3] |= (0x1<<(j&0x7));
 }
 
 void setueq(unsigned char **Table, int i, int j)
 {
-  Table_C[i][j>>3] &= ~(0x1<<(j&0x7));
+  Table[i][j>>3] &= ~(0x1<<(j&0x7));
 }
 
 /***************************End of Declaration**************************************************************/
@@ -130,7 +131,7 @@ int main(int argc, char *argv[])
 // printf("maxsize is : %d  \n", maxsize);
 //Initialize Table C
 
-  Table_C = malloc((originalsize) * sizeof(unsigned char *));
+  Table_C = (unsigned char**)malloc((originalsize) * sizeof(unsigned char *));
 
   if(Table_C == NULL)
   {
@@ -140,7 +141,7 @@ int main(int argc, char *argv[])
 	
   for(i = 0; i < originalsize; i++)
   {
-    Table_C[i] = malloc((newsize+7)/8);
+    Table_C[i] = (unsigned char*)malloc((newsize+7)/8);
     if(Table_C[i] == NULL)
     {
       fprintf(stderr, "2 out of memory\n");
@@ -164,7 +165,7 @@ int main(int argc, char *argv[])
 
 
   //Initilize Table D
-  Table_D = malloc((newsize) * sizeof(unsigned char *));
+  Table_D = (unsigned char**)malloc((newsize) * sizeof(unsigned char *));
   // printf("Table D size is %d \n", newsize);
   if(Table_D == NULL)
   {
@@ -174,7 +175,7 @@ int main(int argc, char *argv[])
   for(i = 0; i < newsize; i++)
   {
 //   printf("Initialize D  i is %d \n", (newsize - i ));
-    Table_D[i] = malloc((newsize+7)/8);
+    Table_D[i] = (unsigned char*)malloc((newsize+7)/8);
     if(Table_D[i] == NULL)
     {
       fprintf(stderr, "4 out of memory\n");
@@ -378,8 +379,8 @@ Segment * StoreIntoDB(Segment seg, int source){
   newnode -> source = source ;   // 1 from old code forward 2 from old code backward 3 from new code forward 4 from new code backward 
   newnode -> num = Seg_counter;
   Seg_counter ++ ;
-  printf("%d old(%d,%d) new(%d,%d)\n", source, seg.Starting_X, seg.Ending_X,
-                                               seg.Starting_Y, seg.Ending_Y);
+//  printf("%d old(%d,%d) new(%d,%d)\n", source, seg.Starting_X, seg.Ending_X,
+//                                               seg.Starting_Y, seg.Ending_Y);
   return newnode;
 }
 
