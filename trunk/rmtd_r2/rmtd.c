@@ -7,7 +7,8 @@
 #define COPYY_COST 9
 #define COPYXY_COST 11
 #define INSERT_COST 0 //3
-
+#define alpha 3
+#define bta 5
 int file_size_global;
 int new_size_global;
 unsigned char** Table_C;
@@ -494,6 +495,7 @@ Segment FindJ(int i) {
 }
 
 /***********************************End of FindJ Function**********************************************/
+int lastcmd = 1;
 
 void PrintMessage(int i) {
   if (i == 0) {
@@ -502,11 +504,18 @@ void PrintMessage(int i) {
   } else {
     PrintMessage(S[i]);
     if (strstr(Message[i],"Copy")== NULL) {
-      Transfer_length += 1;
+		if(lastcmd ==1)
+		{
+			Transfer_length+= alpha;
+			lastcmd=0;
+		}
+		Transfer_length+=1;
+		
     } else {
-      Transfer_length += beta;
+      Transfer_length += bta;
+	  lastcmd =1;
     }
-  printf("%s \n", Message[i]);
+  printf("%s cost:%d\n", Message[i],Transfer_length);
   //printf("Total Bytes need so far is:  %d \n" , Transfer_length);
   }
 }
