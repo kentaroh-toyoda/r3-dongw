@@ -8,10 +8,12 @@
 
 #define p (beta-alpha)
 #define b 256
-#define q 2571
+#define q 2570
 
 #define dbgflag 0
-
+//int start;
+//int finish;
+int memcost =0;
 typedef struct _htentry_t {
 	int offset;
 	struct _htentry_t *next;	
@@ -88,12 +90,15 @@ int main(int argc, char **argv)
 	
 	opt = (int*)malloc((nsize+1)*sizeof(int));
 	memset(opt, 0, (nsize+1)*sizeof(int));
-	
+	memcost += (nsize+1)*sizeof(int);
+
 	opt0 = (int*)malloc((nsize+1)*sizeof(int));
 	memset(opt0, 0, (nsize+1)*sizeof(int));
+	memcost += (nsize+1)*sizeof(int);
 	
 	opt1 = (int*)malloc((nsize+1)*sizeof(int));
 	memset(opt1, 0, (nsize+1)*sizeof(int));
+	memcost += (nsize+1)*sizeof(int);
 	
 	cmds = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
 	cmds0 = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
@@ -118,9 +123,9 @@ int main(int argc, char **argv)
 	r = diff();
 	finish = clock();
 	if(!dbgflag)printcmds(r, nsize);
-	
-	printf("%f seconds.\n", (double)(finish-start)/CLOCKS_PER_SEC);
-	
+	printf("delta %d\n",dsize);
+	printf("time %f\n", (double)(finish-start)/CLOCKS_PER_SEC);
+	printf("memory %d\n",memcost);
 	if (argc >=4 && argv[3] != NULL) {
 	  delta = fopen(argv[3], "wb");
 	  fwrite(dmmap, dsize, 1, delta);
@@ -159,6 +164,7 @@ void generatefootprint()
 	for (i=0; i<=osize-p; i++) {
 		int val = hash(ommap, i);
 		htentry_t *newentry = (htentry_t*)malloc(sizeof(htentry_t));
+		memcost+=sizeof(htentry_t);
 		newentry->offset = i;
 		newentry->next = NULL;
 		
@@ -235,17 +241,17 @@ int diff()
 	  ss0[i] = ss1[i] = 0; // no last cmd actually
 	  opt0[i] = alpha+1;
 	  cmds0[i].type = 0; cmds0[i].length = 1; cmds0[i].inew = i-1;
-	  if(dbgflag)printf("%d|%d: cmd0: type=%d, length=%d, opt0=%d,k=%d,s0=%d\n",lastcmd,i,cmds0[i].type, cmds0[i].inew,cmds0[i].length,opt0[i],ss0[i],s0[i]);
+	  //if(dbgflag)printf("%d|%d: cmd0: type=%d, length=%d, opt0=%d,k=%d,s0=%d\n",lastcmd,i,cmds0[i].type, cmds0[i].inew,cmds0[i].length,opt0[i],ss0[i],s0[i]);
 	  if (k>i-1) { // cannot copy
 		opt1[i] = opt0[i];
 		cmds1[i].type = 0; cmds1[i].length = 1; cmds1[i].inew = i-1;
-		if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s0=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s0[i]);
+		//if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s0=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s0[i]);
 	    lastcmd=0;
 	  } else { // can copy
 		opt1[i] = beta;
 		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
 		ss1[i]=k;
-		if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s0=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s0[i]);
+		//if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s0=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s0[i]);
 	    lastcmd=1;
 	  }
 	}
@@ -254,17 +260,17 @@ int diff()
       s0[i] = s1[i] = 0; 
 	  opt0[i] = opt0[i-1]+1;
 	  cmds0[i].type = 0; cmds0[i].length = 1; cmds0[i].inew = i-1;
-		if(dbgflag)printf("%d|%d: cmd0: type=%d, length=%d, opt0=%d,k=%d,s0=%d\n",lastcmd,i,cmds0[i].type, cmds0[i].length,opt0[i],ss0[i],s0[i]);
+		//if(dbgflag)printf("%d|%d: cmd0: type=%d, length=%d, opt0=%d,k=%d,s0=%d\n",lastcmd,i,cmds0[i].type, cmds0[i].length,opt0[i],ss0[i],s0[i]);
 	  if (k>i-1) { // cannot copy
 		opt1[i] = opt0[i];
 		cmds1[i].type = 0; cmds1[i].length = 1; cmds1[i].inew = i-1;
-		if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s0=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s0[i]);
+		//if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s0=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s0[i]);
 		lastcmd=0;
 	  } else { // can copy
 		opt1[i] = opt0[i-1]+beta;
 		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
 		ss1[i]=k;
-		if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s0=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s0[i]);
+		//if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s0=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s0[i]);
 		lastcmd=1;
 	  }
 	}
@@ -281,12 +287,12 @@ int diff()
 	  }
 	  cmds0[i].type = 0; cmds0[i].length = 1; cmds0[i].inew = i-1;
 	  
-		if(dbgflag)printf("%d|%d: cmd0: type=%d, length=%d, opt0=%d,k=%d,s0=%d\n",lastcmd,i,cmds0[i].type, cmds0[i].length,opt0[i],ss0[i],s0[i]);
+		//if(dbgflag)printf("%d|%d: cmd0: type=%d, length=%d, opt0=%d,k=%d,s0=%d\n",lastcmd,i,cmds0[i].type, cmds0[i].length,opt0[i],ss0[i],s0[i]);
 	  if (k>i-1) { // cannot copy: add
 		opt1[i] = opt0[i];
 		s1[i] = s0[i];
 		cmds1[i].type = 0; cmds1[i].length = 1; cmds1[i].inew = i-1;
-		if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s1=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s1[i]);
+		//if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d,s1=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],s1[i]);
 		lastcmd=0;
 	  } else { // can copy: choose last add or last copy?
 		int addcopy = opt0[i-1]+beta;
@@ -324,7 +330,7 @@ int diff()
 		}
 		cmds1[i].type = 1; cmds1[i].length = i-k; cmds1[i].inew = k; cmds1[i].iold = rm;
 
-		if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d, optk=%d,s1=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],opt1[k],s1[i]);
+		//if(dbgflag)printf("%d|%d: cmd1: type=%d, length=%d, opt1=%d,k=%d, optk=%d,s1=%d\n",lastcmd,i,cmds1[i].type, cmds1[i].length,opt1[i],ss1[i],opt1[k],s1[i]);
 		lastcmd=1;
 	  }
 	}
@@ -354,7 +360,7 @@ void printcmds(int t, int i)
 	printcmds(s0[ss0[i]+1], ss0[i]);
 	switch (cmds0[i].type) {
     case 0:
-	  printf("cmds0: ADD[%d] New[%d] opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, i, opt0[i]);
+	  //printf("cmds0: ADD[%d] New[%d] opt[%d]=%d\n", cmds0[i].length, cmds0[i].inew, i, opt0[i]);
 	  if (i==1 || s0[ss0[i]+1]==1) { // start or last cmd is copy
 		//fwrite(&cmds0[i].type, 1, 1, delta);
 		//fwrite(&cmds0[i].length, 2, 1, delta);
@@ -374,11 +380,11 @@ void printcmds(int t, int i)
 	  }
 	  break;
     case 1:	
-	  printf("cmds0: COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
-	               cmds0[i].length,
-	               cmds0[i].inew, cmds0[i].inew+cmds0[i].length-1,
-				   cmds0[i].iold, cmds0[i].iold+cmds0[i].length-1,
-				   i, opt0[i]);
+	  //printf("cmds0: COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d\n",
+	  //             cmds0[i].length,
+	  //             cmds0[i].inew, cmds0[i].inew+cmds0[i].length-1,
+			//	   cmds0[i].iold, cmds0[i].iold+cmds0[i].length-1,
+			//	   i, opt0[i]);
       //fwrite(&cmds0[i].type, 1, 1, delta);
 	  //fwrite(&cmds0[i].length, 2, 1, delta);
 	  //fwrite(&cmds0[i].inew, 2, 1, delta);
@@ -406,7 +412,7 @@ void printcmds(int t, int i)
 	printcmds(s1[ss1[i]+1], ss1[i]);
 	switch (cmds1[i].type) {
     case 0:
-	  printf("cmds1: ADD[%d] New[%d] opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, i, opt1[i]);
+	  //printf("cmds1: ADD[%d] New[%d] opt[%d]=%d\n", cmds1[i].length, cmds1[i].inew, i, opt1[i]);
 	  if (i==1 || s1[ss1[i]+1]==1) { // start or last cmd is copy
 		//fwrite(&cmds0[i].type, 1, 1, delta);
 		//fwrite(&cmds0[i].length, 2, 1, delta);
@@ -427,11 +433,11 @@ void printcmds(int t, int i)
 	  }
 	  break;
     case 1:	
-	  printf("cmds1: COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d \n",
-	               cmds1[i].length,
-	               cmds1[i].inew, cmds1[i].inew+cmds1[i].length-1,
-				   cmds1[i].iold, cmds1[i].iold+cmds1[i].length-1,
-				   i, opt1[i]);
+	  //printf("cmds1: COPY[%d] New[%d,%d] from Old[%d,%d]: opt[%d]=%d \n",
+	  //             cmds1[i].length,
+	  //             cmds1[i].inew, cmds1[i].inew+cmds1[i].length-1,
+			//	   cmds1[i].iold, cmds1[i].iold+cmds1[i].length-1,
+			//	   i, opt1[i]);
 	  dmmap[dx] = cmds1[i].type;
 	  memcpy(&dmmap[dx+1], &cmds1[i].length, 2);
 //	  memcpy(&dmmap[dx+3], &cmds1[i].inew, 2);
