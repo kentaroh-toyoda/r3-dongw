@@ -110,7 +110,11 @@ sub fix() {
 }
 
 
-open cc, "<changecases.lst" or die "cannot open changecases.lst\n";
+open cc, "<../benchmarks/changecases.lst" or die "cannot open changecases.lst\n";
+open out, ">../gnuplot/r2.log" or die "cannot open r2.log\n";
+print out "\# results for R2\n";
+print out "\#\n";
+print out "\# No old new all_delta compression_radio PSI code_old code_new code_delta code_cr meta_old meta_new meta_delta meta_cr\n";
 while (<cc>) {
 	chomp;
 	
@@ -161,11 +165,32 @@ while (<cc>) {
 		
 		$ds1 = -s "../benchmarks/delta-out-$no.raw";
 		$ds2 = -s "../benchmarks/delta-rela-$no.raw";
+		
+		# gzip
+		&excmd("gzip -f -9 ../benchmarks/delta-out-$no.raw"); # gen main-n.raw.gz
+		&excmd("gzip -f -9 ../benchmarks/delta-rela-$no.raw"); # gen main-n.raw.gz
+		
+		$gzsize_out = -s "../benchmarks/delta-out-$no.raw.gz";
+		$gzsize_rela = -s "../benchmarks/delta-rela-$no.raw.gz";
+		
+		$gzsize = $gzsize_out + $gzsize_out_rela;
+		
 		$deltasize = $ds1 + $ds2;
+		$cr = ($deltasize-$gzsize) / $deltasize;
+		
+		$cr_out = ($ds1-$gzsize_out) / $ds1;
+		$cr_rela = ($ds2-$gzsize_rela) / $ds2;
+		
+		$outold = -s "$dir1/build/telosb/out.raw";
+		$outnew = -s "$dir2/build/telosb/out.raw";
+		$relaold = -s "$dir1/build/telosb/rela.raw";
+		$relanew = -s "$dir2/build/telosb/rela.raw";
+		
 		print "<<< $bmk1 $bmk2 $deltasize $psi_bi0 $ds1 $ds2\n";
 		
+		print out "$no $bmk1 $bmk2 $deltasize $cr $psi_bi0 $outold $outnew $ds1 $cr_out $relaold $relanew $ds2 $cr_rela\n";
 	}
 }
 close cc;
-
+close out;
 exit;

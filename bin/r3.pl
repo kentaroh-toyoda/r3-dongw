@@ -107,7 +107,12 @@ sub fix() {
 	close ft;	
 }
 
-open cc, "<changecases.lst" or die "cannot open changecases.lst\n";
+open cc, "<../benchmarks/changecases.lst" or die "cannot open changecases.lst\n";
+open out, ">../gnuplot/r3.log" or die "cannot open r3.log\n";
+print out "\# results for R3\n";
+print out "\#\n";
+print out "\# No old new all_delta compression_radio PSI code_old code_new code_delta code_cr bm_old bm_new bm_delta bm_cr sym_old sym_new sym_delta sym_cr\n";
+
 while (<cc>) {
 	chomp;
 	
@@ -165,6 +170,11 @@ while (<cc>) {
 		&excmd("$diff $dir1/build/telosb/bm.raw $dir2/build/telosb/bm.raw ../benchmarks/delta-bm-$no.raw > ../benchmarks/r3-bm-$no.log");
 		&excmd("$diff $dir1/build/telosb/sym.raw $dir2/build/telosb/sym.raw ../benchmarks/delta-sym-$no.raw > ../benchmarks/r3-sym-$no.log");
 		
+		$outdelta = -s "../benchmarks/delta-out-$no.raw";
+		$bmdelta  = -s "../benchmarks/delta-bm-$no.raw";
+		$symdelta = -s "../benchmarks/delta-sym-$no.raw";
+		$allsize  = -s "../benchmarks/delta-$no.raw";
+		
 		# 9. psi
 		&excmd("$si $dir1/build/telosb/out-bi2.exe >$dir1/build/telosb/si-bi2.txt");
 		&excmd("$si $dir2/build/telosb/out-bi2.exe >$dir2/build/telosb/si-bi2.txt");
@@ -173,15 +183,39 @@ while (<cc>) {
 		
 		$psi_bi2 = &getpsi("$dir1/build/telosb/si-bi2.txt", "$dir2/build/telosb/si-bi2.txt");
 		
-		$outsize = -s "../benchmarks/delta-out-$no.raw";
-		$bmsize    = -s "../benchmarks/delta-bm-$no.raw";
-		$symsize   = -s "../benchmarks/delta-sym-$no.raw";
-		$allsize  = -s "../benchmarks/delta-$no.raw";
+		# gzip
+		&excmd("gzip -f -9 ../benchmarks/delta-$no.raw");
+		&excmd("gzip -f -9 ../benchmarks/delta-out-$no.raw"); # gen main-n.raw.gz
+		&excmd("gzip -f -9 ../benchmarks/delta-bm-$no.raw"); # gen main-n.raw.gz
+		&excmd("gzip -f -9 ../benchmarks/delta-sym-$no.raw");
+		
+		$gzsize = -s "../benchmarks/delta-$no.raw.gz";
+		$gzsize_out = -s "../benchmarks/delta-out-$no.raw.gz";
+		$gzsize_bm = -s "../benchmarks/delta-bm-$no.raw.gz";
+		$gzsize_sym = -s "../benchmarks/delta-sym-$no.raw.gz";
+		
+				
+		
+		
+		$cr = ($allsize-$gzsize) / $allsize;
+		$outcr = ($outdelta-$gzsize_out) / $outdelta;
+		$bmcr  = ($bmdelta-$gzsize_bm) / $bmdelta;
+		$symcr = ($symdelta-$gzsize_sym) / $symdelta;
 		
 		$tot = $outsize+$bmsize+$symsize;
-		print "<<< $bmk1 $bmk2 $tot $psi_bi2 $bmsize $symsize $outsize $allsize\n";
+		
+		$outold = -s "$dir1/build/telosb/out.raw";
+		$outnew = -s "$dir2/build/telosb/out.raw";
+		$bmold = -s "$dir1/build/telosb/bm.raw";
+		$bmnew = -s "$dir2/build/telosb/bm.raw";	
+		$symold = -s "$dir1/build/telosb/sym.raw";
+		$symnew = -s "$dir2/build/telosb/sym.raw";		
+		
+		print "<<< $bmk1 $bmk2 $allsize $psi_bi2\n";
+		print out "$no $bmk1 $bmk2 $allsize $cr $psi_bi2 $outold $outnew $outdelta $outcr $bmold $bmnew $bmdelta $bmcr $symold $symnew $symdelta $symcr\n";
 	}
 }
 close cc;
+close out;
 
 exit;

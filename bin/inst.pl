@@ -200,8 +200,10 @@ $fcnt=0;
 $icnt=0;
 $scnt=0;
 
+$realfcnt=0;
 print "references_in_functions\n";
 while (($k, $v) = each(%fmap)) {
+	$realfcnt++;
 	if ($v>=1) {
 	  print "$k $v\n";
 	  $fcnt += $v;
@@ -221,10 +223,14 @@ while (($k, $v) = each(%imap)) {
 	}
 }
 print "references_in_instructions: $icnt\n";
+$icnt = @instnames;
+print "total_number_instructions: $icnt\n";
 
 print "references_for_symbols\n";
 $cnt=0;
+$realscnt=0;
 while (($k, $v) = each(%smap)) {
+	$realscnt++;
 	if ($v>=1) {
 		print "$k $v\n";
 		$cnt++;
@@ -232,3 +238,6 @@ while (($k, $v) = each(%smap)) {
 	}
 }
 print "references to all $cnt symbols: $scnt\n";
+# additional data
+print "total_number_symbols: $realscnt\n";
+print "total_number_functions: $realfcnt\n";
