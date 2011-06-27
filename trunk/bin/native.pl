@@ -70,7 +70,8 @@ sub getpsi() {
 	return $match / ($oldcnt>$newcnt ? $oldcnt : $newcnt);
 }
 
-open cc, "<changecases.lst" or die "cannot open changecases.lst\n";
+open cc, "<../benchmarks/changecases.lst" or die "cannot open changecases.lst\n";
+open out, ">../gnuplot/native.log" or die "cannot open native.log\n";
 while (<cc>) {
 	chomp;
 	
@@ -96,10 +97,17 @@ while (<cc>) {
 		&excmd("$si $dir2/build/telosb/main-r2.exe >$dir2/build/telosb/si-n.txt");
 		$psi = &getpsi("$dir1/build/telosb/si-n.txt", "$dir2/build/telosb/si-n.txt");
 		
+		# gzip the delta
+		&excmd("gzip -f -9 ../benchmarks/delta-$no.raw");
+		$gzsize = -s "../benchmarks/delta-$no.raw.gz";
+		
+		$cr = ($deltasize-$gzsize) / $deltasize;
+		
 		print "<<< $bmk1 $bmk2 $deltasize $psi\n";
+		print out "$no $bmk1 $bmk2 $deltasize $cr $psi\n";
 	}
 }
 close cc;
-
+close out;
 exit;
 

@@ -26,12 +26,23 @@ while (<bm>) {
 				print "$rs[2] ";
 			}
 			elsif (/references_in_instructions:/) {
-				print "$rs[1]\n";
+				print "$rs[1] ";
+			}
+			elsif (/total_number_instructions:/) {
+				print "$rs[1] ";
+			}
+			elsif (/total_number_symbols:/) {
+				print "$rs[1] ";
+			}
+			elsif (/total_number_functions:/) {
+				print "$rs[1] ";
 			}
 		}
+		print "\n";
 		close in;				
 	}
 }
 close bm;
 
 exit;
+# reference in calls, reference in all, total # of instruction, # of unique symbols

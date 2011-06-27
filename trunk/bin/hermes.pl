@@ -124,7 +124,12 @@ sub getpsi() {
 	return $match / ($oldcnt>$newcnt ? $oldcnt : $newcnt);
 }
 
-open cc, "<changecases.lst" or die "cannot open changecases.lst\n";
+open cc, "<../benchmarks/changecases.lst" or die "cannot open changecases.lst\n";
+open out, ">../gnuplot/hermes.log" or die "cannot open hermes.log\n";
+print out "\# results for Hermes\n";
+print out "\#\n";
+print out "\# No old new all_delta compression_radio PSI code_old code_new code_delta code_cr meta_old meta_new meta_delta meta_cr\n";
+
 while (<cc>) {
 	chomp;
 	
@@ -145,6 +150,11 @@ while (<cc>) {
 		# 2. convert to out.raw and diff
 		&excmd("perl ./hex2raw.pl $dir1/build/telosb/out-h.ihex $dir1/build/telosb/out-h.raw > $dir1/build/telosb/hex2raw-h.log");
 		&excmd("perl ./hex2raw.pl $dir2/build/telosb/out-h.ihex $dir2/build/telosb/out-h.raw > $dir2/build/telosb/hex2raw-h.log");
+		&excmd("perl ./hex2raw.pl $dir1/build/telosb/out-h1.ihex $dir1/build/telosb/out-h1.raw > $dir1/build/telosb/hex2raw-h1.log");
+		&excmd("perl ./hex2raw.pl $dir2/build/telosb/out-h1.ihex $dir2/build/telosb/out-h1.raw > $dir2/build/telosb/hex2raw-h1.log");
+		&excmd("perl ./hex2raw.pl $dir1/build/telosb/out-h2.ihex $dir1/build/telosb/out-h2.raw > $dir1/build/telosb/hex2raw-h2.log");
+		&excmd("perl ./hex2raw.pl $dir2/build/telosb/out-h2.ihex $dir2/build/telosb/out-h2.raw > $dir2/build/telosb/hex2raw-h2.log");
+		
 		
 		
 		#################################### 2.5: compute the psi
@@ -160,10 +170,36 @@ while (<cc>) {
 		
 		# 3. diff
 		&excmd("$diff $dir1/build/telosb/out-h.raw $dir2/build/telosb/out-h.raw ../benchmarks/delta-$no.raw > ../benchmarks/hermes-$no.log");
+		&excmd("$diff $dir1/build/telosb/out-h1.raw $dir2/build/telosb/out-h1.raw ../benchmarks/delta-code-$no.raw > ../benchmarks/hermes-code-$no.log");
+		&excmd("$diff $dir1/build/telosb/out-h2.raw $dir2/build/telosb/out-h2.raw ../benchmarks/delta-meta-$no.raw > ../benchmarks/hermes-meta-$no.log");
+		
 		$deltasize = -s "../benchmarks/delta-$no.raw";
+		$codedelta = -s "../benchmarks/delta-code-$no.raw";
+		$metadelta = -s "../benchmarks/delta-meta-$no.raw";
+		$codeold = -s "$dir1/build/telosb/out-h1.raw";
+		$codenew = -s "$dir2/build/telosb/out-h1.raw";
+		$metaold = -s "$dir1/build/telosb/out-h2.raw";
+		$metanew = -s "$dir2/build/telosb/out-h2.raw";
+		
+		# 4. gzip the delta
+		&excmd("gzip -f -9 ../benchmarks/delta-$no.raw"); # gen main-n.raw.gz
+		&excmd("gzip -f -9 ../benchmarks/delta-code-$no.raw"); # gen main-n.raw.gz
+		&excmd("gzip -f -9 ../benchmarks/delta-meta-$no.raw"); # gen main-n.raw.gz
+		
+		$gzsize = -s "../benchmarks/delta-$no.raw.gz";
+		$cgzsize = -s "../benchmarks/delta-code-$no.raw.gz";
+		$mgzsize = -s "../benchmarks/delta-meta-$no.raw.gz";
+		
+		$cr = ($deltasize-$gzsize) / $deltasize;
+		$codecr = ($codedelta-$cgzsize) / $codedelta;
+		$metacr = ($metadelta-$mgzsize) / $metadelta;
+		
+		
 		print "<<< $bmk1 $bmk2 $deltasize $psi\n";	
+		print out "$no $bmk1 $bmk2 $deltasize $cr $psi $codeold $codenew $codedelta $codecr $metaold $metanew $metadelta $metacr\n";
 	}
 }
 close cc;
+close out;
 
 exit;
