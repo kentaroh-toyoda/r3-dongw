@@ -4,7 +4,7 @@ $os = $^O;
 
 if ($os =~ /MSWin32/) {
   $diff = "..\\diff_r3\\win32\\diff_dmt.exe";
- 
+	$rmtd = "..\\rmtd_r2\\win32\\rmtd_dmt.exe";
   $bi   = "..\\bi\\win32\\bi.exe";
   $si   = "..\\bi\\win32\\si.exe";
 }
