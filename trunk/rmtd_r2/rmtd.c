@@ -165,34 +165,34 @@ int main(int argc, char *argv[])
   free(Table_C);
 
 
-  //Initilize Table D
-  Table_D = (unsigned char**)malloc((newsize) * sizeof(unsigned char *));
-  // printf("Table D size is %d \n", newsize);
-  if(Table_D == NULL)
-  {
-    fprintf(stderr, "3 out of memory\n");
-    exit(1);
-  }
-  for(i = 0; i < newsize; i++)
-  {
-//   printf("Initialize D  i is %d \n", (newsize - i ));
-    Table_D[i] = (unsigned char*)malloc((newsize+7)/8);
-    if(Table_D[i] == NULL)
-    {
-      fprintf(stderr, "4 out of memory\n");
-      exit(1);
-    }
-  }
-
-// StoreCommon Segments in the new code
-  StoreCommonSegNewcode(Table_D, newfile, newsize);
-
-// Free Table D
-  for(i = 0; i < newsize; i++)
-  {
-    free(Table_D[i]);
-  }
-  free(Table_D);
+//  //Initilize Table D
+//  Table_D = (unsigned char**)malloc((newsize) * sizeof(unsigned char *));
+//  // printf("Table D size is %d \n", newsize);
+//  if(Table_D == NULL)
+//  {
+//    fprintf(stderr, "3 out of memory\n");
+//    exit(1);
+//  }
+//  for(i = 0; i < newsize; i++)
+//  {
+////   printf("Initialize D  i is %d \n", (newsize - i ));
+//    Table_D[i] = (unsigned char*)malloc((newsize+7)/8);
+//    if(Table_D[i] == NULL)
+//    {
+//      fprintf(stderr, "4 out of memory\n");
+//      exit(1);
+//    }
+//  }
+//
+//// StoreCommon Segments in the new code
+//  StoreCommonSegNewcode(Table_D, newfile, newsize);
+//
+//// Free Table D
+//  for(i = 0; i < newsize; i++)
+//  {
+//    free(Table_D[i]);
+//  }
+//  free(Table_D);
 
 
   printf("Seg Counter is : %d \n",Seg_counter );

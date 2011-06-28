@@ -13,8 +13,8 @@ open (tc, ">$dir/time.tbl") or die "cannot open time.tbl\n";
 open (mc, ">$dir/mem.tbl") or die "cannot open mem.tbl\n";
 
 print dt "r3\trmtd\n";
-print tc "r3\trmtd\n";
-print mc "r3\trmtd\n";
+print tc "r3\trmtd\trmtdSearchTableTime\trmtdMDCDTime\trmtdPrintTime\n";
+print mc "r3\trmtd\trmtdTableMem\trmtdSegMem\trmtdOptMem\tRmtdMsgMem\trmtdSegCounter\n";
 
 $no = 1;
 for($n0=1;$no<=10;$no++)
@@ -27,6 +27,14 @@ for($n0=1;$no<=10;$no++)
   $rmtdtime =0;
   $diffmem =0;
   $rmtdmem =0;
+  $rmtdSearchTblTime = 0;
+  $rmtdMDCDtime = 0;
+  $rmtdPrintTime = 0;
+  $rmtdTblmem = 0;
+  $rmtdOptmem = 0;
+  $rmtdMsgmem = 0;
+  $rmtdSegmem = 0;
+  $rmtdSegcounter = 0;
   while(<diff>)
   {
     chomp;
@@ -69,11 +77,43 @@ for($n0=1;$no<=10;$no++)
       {
         $rmtdmem = $rs[1];
       }
+      if($type eq "SearchTableTime")
+      {
+        $rmtdSearchTblTime = $rs[1];
+      }
+      if($type eq "MDCDtime")
+      {
+        $rmtdMDCDtime = $rs[1];
+      }
+      if($type eq "PrintTime")
+      {
+        $rmtdPrintTime = $rs[1];
+      }
+      if($type eq "TableMemory")
+      {
+        $rmtdTblmem = $rs[1];
+      }
+      if($type eq "OptMemory")
+      {
+        $rmtdOptmem = $rs[1];
+      }
+      if($type eq "MsgMemory")
+      {
+        $rmtdMsgmem = $rs[1];
+      }
+      if($type eq "SegmentMemory")
+      {
+        $rmtdSegmem = $rs[1];
+      }
+      if($type eq "SegCounter")
+      {
+        $rmtdSegcounter = $rs[1];
+      }
     }
   }
   print dt "$diffdelta\t$rmtddelta\n";
-  print tc "$difftime\t$rmtdtime\n";
-  print mc "$diffmem\t$rmtdmem\n";
+  print tc "$difftime\t$rmtdtime\t$rmtdSearchTblTime\t$rmtdMDCDtime\t$rmtdPrintTime\n";
+  print mc "$diffmem\t$rmtdmem\t$rmtdTblmem\t$rmtdSegmem\t$rmtdOptmem\t$rmtdMsgmem\t$rmtdSegcounter\n";
   close diff;
   close rmtd;
 }

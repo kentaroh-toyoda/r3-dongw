@@ -14,13 +14,6 @@ int new_size_global;
 unsigned char** Table_C;
 unsigned char ** Table_D;
 int Seg_counter = 0;
-clock_t start;
-clock_t finish;
-clock_t MDCDstart;
-clock_t MDCDfinish;
-clock_t searchTblStart;
-clock_t searchTblFinish;
-int memcost = 0;
 typedef struct Segment Segment;
 
 struct Segment {
@@ -55,6 +48,21 @@ char ** Message ;
 int beta;
 int Transfer_length = 0;
 
+clock_t start;
+clock_t finish;
+clock_t MDCDstart;
+clock_t MDCDfinish;
+clock_t printStart;
+clock_t printFinish;
+clock_t searchTblStart;
+clock_t searchTblFinish;
+
+int memcost = 0;
+int tablecost=0;
+int optcost=0;
+int msgcost=0;
+int segcost=0;
+
 void runMDCD(unsigned char * newfile);
 void PrintMessage(int i);
 Segment FindJ(int i);
@@ -80,6 +88,7 @@ int main(int argc, char *argv[])
 {
   /* open  the original file and read it into an array   */
   //get file size
+
   int originalsize;
   FILE *pFile;
   pFile = fopen (argv[1],"rb");
@@ -130,6 +139,7 @@ int main(int argc, char *argv[])
 // printf("Char size is  %d  \n" , sizeof(char));
 // printf("Int size is  %d  \n" , sizeof(int));
   start=clock();
+  searchTblStart = clock();
 // initialize file_size_global
   file_size_global = newsize ;
   new_size_global = newsize ;
@@ -155,15 +165,15 @@ int main(int argc, char *argv[])
       exit(1);
     }
   }
-  memcost += originalsize * (newsize +7)/8;
+  tablecost = originalsize * (newsize +7)/8;
+  memcost += tablecost;
 
 // StoreCommon Segments
 //printf("originalsize = %d\n", originalsize);
 //printf("newsize = %d\n", newsize);
-  searchTblStart =clock();
   StoreCommonSeg(Table_C, originalfile, newfile, originalsize, newsize);
+  searchTblFinish= clock();
 
-  searchTblFinish =clock();
   // free Table C
 
   for(i = 0; i < originalsize; i++)
@@ -173,9 +183,9 @@ int main(int argc, char *argv[])
   free(Table_C);
 
 
-  //Initilize Table D
+//  //Initilize Table D
 //  Table_D = (unsigned char**)malloc((newsize) * sizeof(unsigned char *));
-  // printf("Table D size is %d \n", newsize);
+//  // printf("Table D size is %d \n", newsize);
 //  if(Table_D == NULL)
 //  {
 //    fprintf(stderr, "3 out of memory\n");
@@ -183,7 +193,7 @@ int main(int argc, char *argv[])
 //  }
 //  for(i = 0; i < newsize; i++)
 //  {
-//   printf("Initialize D  i is %d \n", (newsize - i ));
+////   printf("Initialize D  i is %d \n", (newsize - i ));
 //    Table_D[i] = (unsigned char*)malloc((newsize+7)/8);
 //    if(Table_D[i] == NULL)
 //    {
@@ -192,17 +202,17 @@ int main(int argc, char *argv[])
 //    }
 //  }
 //  memcost += newsize *(newsize +7) /8;
-
-// StoreCommon Segments in the new code
+//
+//// StoreCommon Segments in the new code
 //  StoreCommonSegNewcode(Table_D, newfile, newsize);
-
-// Free Table D
+//
+//// Free Table D
 //  for(i = 0; i < newsize; i++)
 //  {
 //    free(Table_D[i]);
 //  }
 //  free(Table_D);
-
+//
 
  // printf("Seg Counter is : %d \n",Seg_counter );
 
@@ -223,13 +233,15 @@ for( i = 0; i < Seg_counter ; i++ ){
   MDCDstart = clock();
   N = newsize;
   Local_Optimum = (int *) malloc( (N+1) * sizeof(int));
-  memcost+= (N+1)*sizeof(int);
+  optcost = (N+1)*sizeof(int);
+  memcost+= optcost;
   S = (int *) malloc( (N+1) * sizeof(int));
   Message = (char **) malloc((N+1) * sizeof(char *)) ;
   for( i = 0 ; i < N+1 ; i++) {
     Message[i] = (char *) malloc(300 * sizeof(char));
   }
-  memcost += sizeof(char)*(N+1);
+  msgcost = 300*sizeof(char)*(N+1);
+  memcost += msgcost;
   //char   Message[N+1][300]; 
   //int beta;
   //int Transfer_length;
@@ -240,13 +252,24 @@ for( i = 0; i < Seg_counter ; i++ ){
   //printf("\n %d \n", beta);
   runMDCD(newfile);
   MDCDfinish = clock();
+  printStart = clock();
   PrintMessage(N);
+  printFinish = clock();
   finish=clock();
-  	printf("delta %d\n",Transfer_length);
+  segcost =Seg_counter*sizeof(Segment);
+  memcost += segcost;
+  	printf("delta %d\n",Local_Optimum[N]);
   	printf("time %f\n", (double)(finish-start)/CLOCKS_PER_SEC);
+  	printf("SearchTableTime %f\n", (double)(searchTblFinish-searchTblStart)/CLOCKS_PER_SEC);
+  	printf("MDCDtime %f\n", (double)(MDCDfinish-MDCDstart)/CLOCKS_PER_SEC);
+  	printf("PrintTime %f\n", (double)(printFinish-printStart)/CLOCKS_PER_SEC);
   	printf("memory %d\n", memcost);
-  	printf("search Table time %f\n", (double)(searchTblFinish-searchTblStart)/CLOCKS_PER_SEC);
-  	printf("run MDCD time %f\n", (double)(MDCDfinish-MDCDstart)/CLOCKS_PER_SEC);
+  	printf("TableMemory %d\n", tablecost);
+  	printf("OptMemory %d\n", optcost);
+  	printf("MsgMemory %d\n", msgcost);
+  	printf("SegmentMemory %d\n", segcost);
+	printf("SegCounter %d\n",Seg_counter);
+
   //system("PAUSE");	
   return 0;
 }
