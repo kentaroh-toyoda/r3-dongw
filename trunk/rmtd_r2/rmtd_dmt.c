@@ -16,6 +16,10 @@ unsigned char ** Table_D;
 int Seg_counter = 0;
 clock_t start;
 clock_t finish;
+clock_t MDCDstart;
+clock_t MDCDfinish;
+clock_t searchTblStart;
+clock_t searchTblFinish;
 int memcost = 0;
 typedef struct Segment Segment;
 
@@ -156,9 +160,10 @@ int main(int argc, char *argv[])
 // StoreCommon Segments
 //printf("originalsize = %d\n", originalsize);
 //printf("newsize = %d\n", newsize);
-
+  searchTblStart =clock();
   StoreCommonSeg(Table_C, originalfile, newfile, originalsize, newsize);
 
+  searchTblFinish =clock();
   // free Table C
 
   for(i = 0; i < originalsize; i++)
@@ -169,34 +174,34 @@ int main(int argc, char *argv[])
 
 
   //Initilize Table D
-  Table_D = (unsigned char**)malloc((newsize) * sizeof(unsigned char *));
+//  Table_D = (unsigned char**)malloc((newsize) * sizeof(unsigned char *));
   // printf("Table D size is %d \n", newsize);
-  if(Table_D == NULL)
-  {
-    fprintf(stderr, "3 out of memory\n");
-    exit(1);
-  }
-  for(i = 0; i < newsize; i++)
-  {
+//  if(Table_D == NULL)
+//  {
+//    fprintf(stderr, "3 out of memory\n");
+//    exit(1);
+//  }
+//  for(i = 0; i < newsize; i++)
+//  {
 //   printf("Initialize D  i is %d \n", (newsize - i ));
-    Table_D[i] = (unsigned char*)malloc((newsize+7)/8);
-    if(Table_D[i] == NULL)
-    {
-      fprintf(stderr, "4 out of memory\n");
-      exit(1);
-    }
-  }
-  memcost += newsize *(newsize +7) /8;
+//    Table_D[i] = (unsigned char*)malloc((newsize+7)/8);
+//    if(Table_D[i] == NULL)
+//    {
+//      fprintf(stderr, "4 out of memory\n");
+//      exit(1);
+//    }
+//  }
+//  memcost += newsize *(newsize +7) /8;
 
 // StoreCommon Segments in the new code
-  StoreCommonSegNewcode(Table_D, newfile, newsize);
+//  StoreCommonSegNewcode(Table_D, newfile, newsize);
 
 // Free Table D
-  for(i = 0; i < newsize; i++)
-  {
-    free(Table_D[i]);
-  }
-  free(Table_D);
+//  for(i = 0; i < newsize; i++)
+//  {
+//    free(Table_D[i]);
+//  }
+//  free(Table_D);
 
 
  // printf("Seg Counter is : %d \n",Seg_counter );
@@ -215,6 +220,7 @@ for( i = 0; i < Seg_counter ; i++ ){
 
 */
   // run MDCD
+  MDCDstart = clock();
   N = newsize;
   Local_Optimum = (int *) malloc( (N+1) * sizeof(int));
   memcost+= (N+1)*sizeof(int);
@@ -223,7 +229,7 @@ for( i = 0; i < Seg_counter ; i++ ){
   for( i = 0 ; i < N+1 ; i++) {
     Message[i] = (char *) malloc(300 * sizeof(char));
   }
-  memcost += 300*sizeof(char)*(N+1);
+  memcost += sizeof(char)*(N+1);
   //char   Message[N+1][300]; 
   //int beta;
   //int Transfer_length;
@@ -233,11 +239,14 @@ for( i = 0; i < Seg_counter ; i++ ){
   S[0] = 0;
   //printf("\n %d \n", beta);
   runMDCD(newfile);
+  MDCDfinish = clock();
   PrintMessage(N);
   finish=clock();
   	printf("delta %d\n",Transfer_length);
   	printf("time %f\n", (double)(finish-start)/CLOCKS_PER_SEC);
   	printf("memory %d\n", memcost);
+  	printf("search Table time %f\n", (double)(searchTblFinish-searchTblStart)/CLOCKS_PER_SEC);
+  	printf("run MDCD time %f\n", (double)(MDCDfinish-MDCDstart)/CLOCKS_PER_SEC);
   //system("PAUSE");	
   return 0;
 }
