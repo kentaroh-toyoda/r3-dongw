@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 #define COPY_COST 7
 #define COPYX_COST 9
 #define COPYY_COST 9
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 // printf("maxsize is : %d  \n", maxsize);
 //Initialize Table C
 
-  Table_C = malloc((originalsize) * sizeof(unsigned char *));
+  Table_C = (unsigned char**)malloc((originalsize) * sizeof(unsigned char *));
 
   if(Table_C == NULL)
   {
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 	
   for(i = 0; i < originalsize; i++)
   {
-    Table_C[i] = malloc((newsize+7)/8);
+    Table_C[i] = (unsigned char*)malloc((newsize+7)/8);
     if(Table_C[i] == NULL)
     {
       fprintf(stderr, "2 out of memory\n");
@@ -490,19 +490,36 @@ Segment FindJ(int i) {
 /***********************************End of FindJ Function**********************************************/
 
 void PrintMessage(int i) {
-  if (i == 0) {
-    // printf("%s \n", Message[0]);
-    return;
-  } else {
-    PrintMessage(S[i]);
-    if (strstr(Message[i],"Copy")== NULL) {
-      Transfer_length += 1;
-    } else {
-      Transfer_length += beta;
-    }
-  printf("%s \n", Message[i]);
+  //if (i == 0) {
+  //  // printf("%s \n", Message[0]);
+  //  return;
+  //} else {
+  //  PrintMessage(S[i]);
+  //  if (strstr(Message[i],"Copy")== NULL) {
+  //    Transfer_length += 1;
+  //  } else {
+  //    Transfer_length += beta;
+  //  }
+  //printf("%s \n", Message[i]);
+  	int* stack = (int*) malloc(i*sizeof(int));
+	int count =0;
+	int j=i;
+	while(j>0)
+	{
+		stack[count] = j;
+		j=S[j];
+		count++;
+	}
+	count--;
+	while(count >=0)
+	{
+
+		printf("%s\n",Message[stack[count]]);
+		count--;
+	}
+	free(stack);
   //printf("Total Bytes need so far is:  %d \n" , Transfer_length);
-  }
+  
 }
 
 /**********************************End of PrintMessage Function**********************************************/
