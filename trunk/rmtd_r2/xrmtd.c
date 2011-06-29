@@ -9,7 +9,7 @@
 #define COPYY_COST 9
 #define COPYXY_COST 11
 // 1 op, 2 length
-#define INSERT_COST 1
+#define INSERT_COST 0
 
 typedef struct sym_t {
   unsigned short offset;  // virtual address that needs to be fixed
@@ -165,8 +165,8 @@ int main(int argc, char *argv[])
   }
 
   // StoreCommon Segments
-  printf("originalsize = %d\n", originalsize);
-  printf("newsize = %d\n", newsize);
+  printf("originalsize %d\n", originalsize*sizeof(sym_t));
+  printf("newsize %d\n", newsize*sizeof(sym_t));
 
 
   
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
   }
   free(Table_D);
 */
-  printf("Seg Counter is : %d \n",Seg_counter );
+  printf("SegCounter %d \n",Seg_counter );
 
   /*
   Segment * tmp = (&Seghead) -> next ;
@@ -244,7 +244,8 @@ int main(int argc, char *argv[])
   //{
 	 // printf("i=%d s[i]=%d %s\n",i,S[i],Message[i]);
   //}
-  PrintMessage(N);
+  printf("delta %d\n",Local_Optimum[N]);
+  //PrintMessage(N);
   // system("PAUSE");
   
   for(i = 0; i < originalsize; i++)
