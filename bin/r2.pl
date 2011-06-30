@@ -4,13 +4,13 @@ $os = $^O;
 
 if ($os =~ /MSWin32/) {
   $diff = "..\\diff_r3\\win32\\diff.exe";
-  $xdiff = $diff;
+  $xdiff = "..\\rmtd_r2\\win32\\xrmtd.exe";
   $bi   = "..\\bi\\win32\\bi.exe";
   $si   = "..\\bi\\win32\\si.exe";
 }
 elsif ($os =~ /linux/) {
 	$diff = "../diff_r3/linux/diff.exe";
-	$xdiff = $diff;
+	$xdiff = "../rmtd_r2/linux/xrmtd.exe";
 	$bi   = "../bi/linux/bi.exe";
 	$si   = "../bi/linux/si.exe";
 }
@@ -20,6 +20,36 @@ sub excmd() {
 	print "$cmd\n";
 	$info = `$cmd`;
 }
+
+# for xrmtd
+sub getsize() {
+	my ($file) = @_;
+	my $totalbytes;
+	my $fixedbytes;
+	
+	open fd, "<$file" or die "cannot open $file\n";
+	while (<fd>) {
+		chomp;
+		if (/^\[([\d]+)\]/) {
+			$totalbytes = $1;
+		}
+	}
+	close fd;
+		
+	&excmd("perl ../rmtd_r2/opx.pl $file > ../benchmarks/xrmtd-fixed.log");
+	open fd, "<../benchmarks/xrmtd-fixed.log";
+	while (<fd>) {
+		if (/reducedbytes:/) {
+			my @rs = split;
+			$rb = $rs[1];
+		}	
+	}
+	close fd;
+		
+	$fixedbytes = $totalbytes - $rb;
+	return ($totalbytes,$fixedbytes);
+}
+
 
 sub getpsi() {
   my ($si1, $si2) = @_;
@@ -153,7 +183,10 @@ while (<cc>) {
     &excmd("$diff $dir1/build/telosb/out.raw $dir2/build/telosb/out.raw ../benchmarks/delta-out-$no.raw > ../benchmarks/r2-out-$no.log");
         
     # 6. diff for the rela entries
-    &excmd("$xdiff $dir1/build/telosb/rela.raw $dir2/build/telosb/rela.raw ../benchmarks/delta-rela-$no.raw > ../benchmarks/r2-rela-$no.log");
+    &excmd("$xdiff $dir1/build/telosb/rela.raw $dir2/build/telosb/rela.raw 5 > ../benchmarks/xrmtd-rela-$no.log");
+    
+    ($dummy,$ds2) = &getsize("../benchmarks/xrmtd-rela-$no.log");
+    
 		
 		# 7. psi
 		&excmd("$si $dir1/build/telosb/out-bi0.exe >$dir1/build/telosb/si-bi0.txt");
@@ -164,7 +197,7 @@ while (<cc>) {
 		$psi_bi0 = &getpsi("$dir1/build/telosb/si-bi0.txt", "$dir2/build/telosb/si-bi0.txt");
 		
 		$ds1 = -s "../benchmarks/delta-out-$no.raw";
-		$ds2 = -s "../benchmarks/delta-rela-$no.raw";
+		#$ds2 = -s "../benchmarks/delta-rela-$no.raw";
 		
 		# gzip
 		&excmd("gzip -f -9 ../benchmarks/delta-out-$no.raw"); # gen main-n.raw.gz
@@ -173,7 +206,7 @@ while (<cc>) {
 		$gzsize_out = -s "../benchmarks/delta-out-$no.raw.gz";
 		$gzsize_rela = -s "../benchmarks/delta-rela-$no.raw.gz";
 		
-		$gzsize = $gzsize_out + $gzsize_out_rela;
+		$gzsize = $gzsize_out + $gzsize_rela;
 		
 		$deltasize = $ds1 + $ds2;
 		$cr = ($deltasize-$gzsize) / $deltasize;
