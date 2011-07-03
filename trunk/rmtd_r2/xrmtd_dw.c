@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
   //
   //Segment * tmp = (&Seghead) -> next ;
   //for( i = 0; i < Seg_counter ; i++ ) {
-  //  printf("The %d Seg's StartingX is %d , Ending X is %d , StartingY is %d, EndingY is %d (%d,%d) \n", tmp->num, tmp->Starting_X , tmp->Ending_X, tmp->Starting_Y, tmp->Ending_Y,
+	 // printf("The %d Seg's length=%d StartingX is %d , Ending X is %d , StartingY is %d, EndingY is %d (%d,%d) \n", tmp->num,tmp->Ending_Y-tmp->Starting_Y, tmp->Starting_X , tmp->Ending_X, tmp->Starting_Y, tmp->Ending_Y,
   //      tmp->offset, tmp->address);
   //  tmp = tmp -> next ;
   //}
@@ -222,12 +222,12 @@ int main(int argc, char *argv[])
   S[0] = 0;
   //printf("\n %d \n", beta);
   runMDCD(newfile);
-  printf("delta %d\n",Local_Optimum[N]);
   //for(i=1;i<N+1;i++)
   //{
 	 // printf("%s\n",Message[i]);
   //}
   PrintMessage(N);
+  printf("delta %d\n",Transfer_length);
   // system("PAUSE");
   
   for(i = 0; i < originalsize; i++)
@@ -261,12 +261,12 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
 // store the common segment in the forward order from old code
   for (m = osize - 1; m >= 0; m--) {
     for (n = nsize - 1; n >= 0; n--) {
+		
       seg.Ending_X = m;
       seg.Ending_Y = n;
       
       seg.offset = Table_C[m][n].offset;
       seg.address = Table_C[m][n].address;
-      
       ti = SearchSeg(Table_C, ofile, nfile, m, n, Table_C[m][n]);
       seg.Starting_X = ti.x;
       seg.Starting_Y = ti.y; 
@@ -283,11 +283,12 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
       }
       
       // the length is actally  seg.Ending_Y - seg.Starting_Y+1
-      if ((seg.Ending_Y - seg.Starting_Y+1)*sizeof(sym_t)+INSERT_COST > beta) {
+      if ((seg.Ending_Y - seg.Starting_Y+1)*sizeof(sym_t) > beta) {
         lastseg -> next = StoreIntoDB(seg , 1);
         lastseg = lastseg -> next;
       }
     }
+	
   }
   ////  store the common segment in the backward order from old code
   //for (m = osize - 1; m >= 0; m--) {
@@ -318,21 +319,21 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
 
 /***********************************End of StoreSeg Function**********************************************/
 Twoint  SearchSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value) {
-  Twoint  t ;
+  Twoint  t;
   if (m == -1 || n == -1) {
     t.x = m + 1;
     t.y = n + 1;
     return t;
   }
-  if ( 
-  	//(Table_C[m][n].offset != 0xffff) && (Table_C[m][n].address != 0xffff) && 
-  	(Table_C[m][n].offset == value.offset) && (Table_C[m][n].address == value.address)) {
+  if ( (Table_C[m][n].offset == value.offset) && (Table_C[m][n].address == value.address)
+	 && (Table_C[m][n].offset != 0xffff) && (Table_C[m][n].address != 0xffff)
+	  ) {
     //DW::
     //Table_C[m][n] = 's';
-    //Table_C[m][n].offset  = 0xffff;
-    //Table_C[m][n].address = 0xffff;
-    
     t = SearchSeg(Table_C, ofile, nfile, m - 1, n - 1, value);
+    Table_C[m][n].offset  = 0xffff;
+    Table_C[m][n].address = 0xffff;
+    
   } else {
     t.x = m + 1;
     t.y = n + 1;
@@ -682,5 +683,4 @@ void PrintMessage(int i) {
 }
 
 /***********************************End of PrintMessage Function**********************************************/
-
 
