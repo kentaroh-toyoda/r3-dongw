@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+
 $os = $^O;
 
 if ($os =~ /MSWin32/) {
@@ -10,7 +11,8 @@ if ($os =~ /MSWin32/) {
 }
 elsif ($os =~ /linux/) {
 	$diff = "../diff_r3/linux/diff.exe";
-	$xdiff = $diff;
+	$xdiff = "../rmtd_r2/linux/xrmtd.exe";
+	#$xdiff = $diff;
 	$bi   = "../bi/linux/bi.exe";
 	$si   = "../bi/linux/si.exe";
 }
@@ -110,7 +112,7 @@ sub fix() {
 }
 
 
-open cc, "<../benchmarks/changecases.lst" or die "cannot open changecases.lst\n";
+open cc, "<changecases.lst" or die "cannot open changecases.lst\n";
 open out, ">../gnuplot/r2c.log" or die "cannot open r2c.log\n";
 print out "\# results for R2c\n";
 print out "\#\n";
@@ -154,10 +156,10 @@ while (<cc>) {
     &excmd("$diff $dir1/build/telosb/out.raw $dir2/build/telosb/out.raw ../benchmarks/delta-out-$no.raw > ../benchmarks/r2c-out-$no.log");
         
     # 6. diff for the rela entries
-    &excmd("$xdiff $dir1/build/telosb/crela.raw $dir2/build/telosb/crela.raw ../benchmarks/delta-crela-$no.raw >../benchmarks/r2c-crela-$no.log");
+    &excmd("$xdiff $dir1/build/telosb/crela.raw $dir2/build/telosb/crela.raw 5 ../benchmarks/xrmtd-delta-crela-$no.raw >../benchmarks/r2c-crela-$no.log");
 
 		$ds1 = -s "../benchmarks/delta-out-$no.raw";
-		$ds2 = -s "../benchmarks/delta-crela-$no.raw";
+		$ds2 = -s "../benchmarks/xrmtd-delta-crela-$no.raw";
 				
 		# 7. psi
 		&excmd("$si $dir1/build/telosb/out-bi1.exe >$dir1/build/telosb/si-bi1.txt");
@@ -169,10 +171,10 @@ while (<cc>) {
 		
 		# gzip
 		&excmd("gzip -f -9 ../benchmarks/delta-out-$no.raw"); # gen main-n.raw.gz
-		&excmd("gzip -f -9 ../benchmarks/delta-crela-$no.raw"); # gen main-n.raw.gz
+		&excmd("gzip -f -9 ../benchmarks/xrmtd-delta-crela-$no.raw"); # gen main-n.raw.gz
 		
 		$gzsize_out = -s "../benchmarks/delta-out-$no.raw.gz";
-		$gzsize_rela = -s "../benchmarks/delta-crela-$no.raw.gz";
+		$gzsize_rela = -s "../benchmarks/xrmtd-delta-crela-$no.raw.gz";
 		
 		$gzsize = $gzsize_out + $gzsize_out_rela;
 		
