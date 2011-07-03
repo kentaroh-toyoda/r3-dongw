@@ -140,7 +140,7 @@ sub fix() {
 }
 
 
-open cc, "<../benchmarks/changecases.lst" or die "cannot open changecases.lst\n";
+open cc, "<changecases.lst" or die "cannot open changecases.lst\n";
 open out, ">../gnuplot/r2.log" or die "cannot open r2.log\n";
 print out "\# results for R2\n";
 print out "\#\n";
@@ -183,7 +183,7 @@ while (<cc>) {
     &excmd("$diff $dir1/build/telosb/out.raw $dir2/build/telosb/out.raw ../benchmarks/delta-out-$no.raw > ../benchmarks/r2-out-$no.log");
         
     # 6. diff for the rela entries
-    &excmd("$xdiff $dir1/build/telosb/rela.raw $dir2/build/telosb/rela.raw 5 > ../benchmarks/xrmtd-rela-$no.log");
+    &excmd("$xdiff $dir1/build/telosb/rela.raw $dir2/build/telosb/rela.raw 5 ../benchmarks/xrmtd-delta-rela-$no.raw> ../benchmarks/xrmtd-rela-$no.log");
     
     ($dummy,$ds2) = &getsize("../benchmarks/xrmtd-rela-$no.log");
     
@@ -197,11 +197,12 @@ while (<cc>) {
 		$psi_bi0 = &getpsi("$dir1/build/telosb/si-bi0.txt", "$dir2/build/telosb/si-bi0.txt");
 		
 		$ds1 = -s "../benchmarks/delta-out-$no.raw";
-		#$ds2 = -s "../benchmarks/delta-rela-$no.raw";
+		$ds2 = -s "../benchmarks/xrmtd-delta-rela-$no.raw";
 		
 		# gzip
 		&excmd("gzip -f -9 ../benchmarks/delta-out-$no.raw"); # gen main-n.raw.gz
 		&excmd("gzip -f -9 ../benchmarks/delta-rela-$no.raw"); # gen main-n.raw.gz
+		&excmd("gzip -f -9 ../benchmarks/xrmtd-delta-rela-$no.raw"); # gen main-n.raw.gz
 		
 		$gzsize_out = -s "../benchmarks/delta-out-$no.raw.gz";
 		$gzsize_rela = -s "../benchmarks/delta-rela-$no.raw.gz";
