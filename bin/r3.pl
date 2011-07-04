@@ -172,7 +172,7 @@ while (<cc>) {
 		&excmd("$diff $dir1/build/telosb/out.raw $dir2/build/telosb/out.raw ../benchmarks/delta-out-$no.raw > ../benchmarks/r3-out-$no.log");
 		&excmd("$diff $dir1/build/telosb/bm.raw $dir2/build/telosb/bm.raw ../benchmarks/delta-bm-$no.raw > ../benchmarks/r3-bm-$no.log");
 		&excmd("$diff $dir1/build/telosb/sym.raw $dir2/build/telosb/sym.raw ../benchmarks/delta-sym-$no.raw > ../benchmarks/r3-sym-$no.log");
-		#bit Level comparison
+		# bit Level comparison
 		&excmd("$extend $dir1/build/telosb/bm.raw $dir1/build/telosb/bmbyte.raw > ../benchmarks/extend-$no-dir1.log");
 		&excmd("$extend $dir2/build/telosb/bm.raw $dir2/build/telosb/bmbyte.raw > ../benchmarks/extend-$no-dir2.log");
 		#&excmd("$diff $dir1/build/telosb/bmbyte.raw $dir2/build/telosb/bmbyte.raw ../benchmarks/delta-bmbyte-$no.raw > ../benchmarks/r3-bm-byte-$no.log");
@@ -223,6 +223,7 @@ while (<cc>) {
 		print out "$no $bmk1 $bmk2 $allsize $cr $psi_bi2 $outold $outnew $outdelta $outcr $bmold $bmnew $bmdelta $bmcr $symold $symnew $symdelta $symcr\n";
 	}
 }
+&excmd("./bmstat.pl");
 close cc;
 close out;
 
