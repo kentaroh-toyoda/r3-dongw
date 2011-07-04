@@ -10,7 +10,7 @@ $dir = "../benchmarks/bm";
 
 open (dt, ">$dir/delta.tbl") or die "cannot open delta.tbl\n";
 
-print dt "bit\tbyte\n";
+print dt "byte\tbit\n";
 
 $no = 1;
 for($n0=1;$no<=10;$no++)

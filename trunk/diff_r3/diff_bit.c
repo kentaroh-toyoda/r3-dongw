@@ -14,6 +14,7 @@
 //int start;
 //int finish;
 int memcost =0;
+int trans_length =0;
 typedef struct _htentry_t {
 	int offset;
 	struct _htentry_t *next;	
@@ -35,6 +36,7 @@ int findk(int current, int *rm);
 int diff();
 void printcmds(int t, int i);
 int memaddr(int fileaddr);
+void addToTransLength(int len);
 //////////////////////////////////////////////////
 
 htentry_t *hthead[q]; 
@@ -123,7 +125,7 @@ int main(int argc, char **argv)
 	r = diff();
 	finish = clock();
 	if(!dbgflag)printcmds(r, nsize);
-	printf("delta %d\n",dsize);
+	printf("delta %d\n",trans_length);
 	printf("time %f\n", (double)(finish-start)/CLOCKS_PER_SEC);
 	printf("memory %d\n",memcost);
 	if (argc >=4 && argv[3] != NULL) {
@@ -349,7 +351,6 @@ int diff()
 int alen=0;
 int alendx=0;
 int dx=0;
-
 void printcmds(int t, int i)
 {
   if (i<=0) 
@@ -368,6 +369,7 @@ void printcmds(int t, int i)
 		memcpy(&dmmap[dx+1], &cmds0[i].length, 2);
 		alendx = dx+1; 
 		dx += alpha;
+	    trans_length += alpha;
 //		printf("dx=%d\n",dx);
 	  }
 	  dmmap[dx++] = nmmap[cmds0[i].inew];
@@ -375,6 +377,7 @@ void printcmds(int t, int i)
 	  alen++;
 	  if (i==nsize) {
 		  memcpy(&dmmap[alendx], &alen, 2);
+		  addToTransLength(alen);
 		  alen = 0;
 		  alendx=0;
 	  }
@@ -394,9 +397,11 @@ void printcmds(int t, int i)
 //	  memcpy(&dmmap[dx+3], &cmds0[i].inew, 2);
 	  memcpy(&dmmap[dx+3], &cmds0[i].iold, 2);
 	  dx += beta;
+	  trans_length += beta;
 //	  printf("dx=%d\n",dx);
 	  if (alendx>0) {
 		  memcpy(&dmmap[alendx], &alen, 2);
+		  addToTransLength(alen);
 		  alen = 0;
 		  alendx=0;
 	  }	
@@ -420,6 +425,7 @@ void printcmds(int t, int i)
 		memcpy(&dmmap[dx+1], &cmds1[i].length, 2);
 		alendx = dx+1; 
 		dx += alpha;
+		trans_length += alpha;
 //		printf("dx=%d\n",dx);
 	  }
 	  dmmap[dx++] = nmmap[cmds1[i].inew];
@@ -428,6 +434,7 @@ void printcmds(int t, int i)
 	  alen++;
 	  if (i==nsize) {
 		  memcpy(&dmmap[alendx], &alen, 2);
+		  addToTransLength(alen);
 		  alen = 0;
 		  alendx =0;
 	  }
@@ -443,9 +450,11 @@ void printcmds(int t, int i)
 //	  memcpy(&dmmap[dx+3], &cmds1[i].inew, 2);
 	  memcpy(&dmmap[dx+3], &cmds1[i].iold, 2);
 	  dx += beta;
+	  trans_length += beta;
 //	  printf("dx=%d\n",dx);
 	  if (alendx>0) {
 		  memcpy(&dmmap[alendx], &alen, 2);
+		  addToTransLength(alen);
 		  alen = 0;
 		  alendx=0;
 	  }				   
@@ -482,4 +491,13 @@ int memaddr(int fileaddr)
 	}
   }
   return -1;  
+}
+
+void addToTransLength(int len)
+{
+	int tmp = len;
+	tmp = tmp -(tmp %8);
+	if(tmp < len) tmp += 8;
+	trans_length += tmp;
+	
 }
