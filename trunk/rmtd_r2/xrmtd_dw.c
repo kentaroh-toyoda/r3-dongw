@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include<string.h>
+
 // 1 op, 2 oldOffset, 2 newOffset, 2 length
 #define COPY_COST 5
 #define COPYX_COST 7
@@ -9,29 +9,19 @@
 // 1 op, 2 length
 #define INSERT_COST 0
 
-#define  ADD_COST 3
 typedef struct sym_t {
   unsigned short offset;  // virtual address that needs to be fixed
   unsigned short address; // use this address
 } sym_t;
-
-typedef struct cmd_t {
-	unsigned int type;
-	int length;
-	int iold;
-	int inew;
-	int x_off;
-	int y_off;
-} cmd_t;
 
 int file_size_global;
 int new_size_global;
 sym_t ** Table_C;
 sym_t ** Table_D;
 int Seg_counter = 0;
-sym_t *originalfile, *newfile;
+
 typedef struct Segment Segment;
-FILE * deltaFile= NULL;
+
 struct Segment {
 	int Starting_X;
 	int Starting_Y;
@@ -56,7 +46,6 @@ typedef struct Twoint {
 
 void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, int nsize);
 Twoint SearchSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value);
-Twoint SearchSegBackward(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value);
 Segment * StoreIntoDB( Segment seg , int source);
 
 int N ;
@@ -64,7 +53,6 @@ int * Local_Optimum;
 int * S;
 
 char ** Message ;
-cmd_t* cmd;
 
 int beta;
 int Transfer_length = 0;
@@ -78,11 +66,7 @@ int main(int argc, char *argv[])
 {
   int originalsize;
   FILE *pFile;
-  
-	if(argc >=5 && argv[4] != NULL)
-	{
-		deltaFile = fopen(argv[4],"wb");
-	}
+
   // size of sym_t is 4 bytes
   pFile = fopen (argv[1],"rb");
 
@@ -100,7 +84,7 @@ int main(int argc, char *argv[])
 
   beta = atoi(argv[3]);
 
-  originalfile=(sym_t*)malloc((originalsize + 1)*sizeof(sym_t));
+  sym_t * originalfile=(sym_t*)malloc((originalsize + 1)*sizeof(sym_t));
 
   int c , i;
   i=0;
@@ -131,7 +115,7 @@ int main(int argc, char *argv[])
   }
 
   // read new file into an array
-  newfile=(sym_t *)malloc((newsize + 1)*sizeof(sym_t));
+  sym_t * newfile=(sym_t *)malloc((newsize + 1)*sizeof(sym_t));
 
   int j = 0;
 
@@ -162,7 +146,7 @@ int main(int argc, char *argv[])
   // printf("maxsize is : %d  \n", maxsize);
 
   //Initialize Table C
-  Table_C = (sym_t**)malloc((originalsize) * sizeof(sym_t *));
+  Table_C = malloc((originalsize) * sizeof(sym_t *));
 
   if(Table_C == NULL)
   {
@@ -172,7 +156,7 @@ int main(int argc, char *argv[])
 	
   for(i = 0; i < originalsize; i++)
   {
-    Table_C[i] = (sym_t*)malloc(newsize * sizeof(sym_t));
+    Table_C[i] = malloc(newsize * sizeof(sym_t));
     if(Table_C[i] == NULL)
     {
       fprintf(stderr, "out of memory\n");
@@ -190,13 +174,13 @@ int main(int argc, char *argv[])
   
   printf("SegCounter %d \n",Seg_counter );
 
-  //
-  //Segment * tmp = (&Seghead) -> next ;
-  //for( i = 0; i < Seg_counter ; i++ ) {
-	 // printf("The %d Seg's length=%d StartingX is %d , Ending X is %d , StartingY is %d, EndingY is %d (%d,%d) \n", tmp->num,tmp->Ending_Y-tmp->Starting_Y, tmp->Starting_X , tmp->Ending_X, tmp->Starting_Y, tmp->Ending_Y,
-  //      tmp->offset, tmp->address);
-  //  tmp = tmp -> next ;
-  //}
+  
+  Segment * tmp = (&Seghead) -> next ;
+  for( i = 0; i < Seg_counter ; i++ ) {
+    printf("The %d Seg's StartingX is %d , Ending X is %d , StartingY is %d, EndingY is %d (%d,%d) \n", tmp->num, tmp->Starting_X , tmp->Ending_X, tmp->Starting_Y, tmp->Ending_Y,
+        tmp->offset, tmp->address);
+    tmp = tmp -> next ;
+  }
   
 
   // run MDCD
@@ -205,7 +189,6 @@ int main(int argc, char *argv[])
   S = (int *) malloc( (N+1) * sizeof(int));
 
   Message = (char **) malloc((N+1) * sizeof(char *)) ;
-  cmd = (cmd_t*)malloc((N+1)*sizeof(cmd_t));
   for( i = 0 ; i < N+1 ; i++) {
     Message[i] = (char *) malloc(300 * sizeof(char));
   }
@@ -214,20 +197,13 @@ int main(int argc, char *argv[])
   //int Transfer_length;
   Local_Optimum[0] = 0;
   Message[0] = "Here is the beginning of the new code image" ;
-  cmd[0].type = -1;
-  cmd[0].length =-1;
-  cmd[0].inew=-1;
-  cmd[0].iold = -1;
+
   //printf("%s", Message[0]);
   S[0] = 0;
   //printf("\n %d \n", beta);
   runMDCD(newfile);
-  //for(i=1;i<N+1;i++)
-  //{
-	 // printf("%s\n",Message[i]);
-  //}
+  printf("delta %d\n",Local_Optimum[N]);
   PrintMessage(N);
-  printf("delta %d\n",Transfer_length);
   // system("PAUSE");
   
   for(i = 0; i < originalsize; i++)
@@ -261,12 +237,12 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
 // store the common segment in the forward order from old code
   for (m = osize - 1; m >= 0; m--) {
     for (n = nsize - 1; n >= 0; n--) {
-		
       seg.Ending_X = m;
       seg.Ending_Y = n;
       
       seg.offset = Table_C[m][n].offset;
       seg.address = Table_C[m][n].address;
+      
       ti = SearchSeg(Table_C, ofile, nfile, m, n, Table_C[m][n]);
       seg.Starting_X = ti.x;
       seg.Starting_Y = ti.y; 
@@ -283,80 +259,38 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
       }
       
       // the length is actally  seg.Ending_Y - seg.Starting_Y+1
-      if ((seg.Ending_Y - seg.Starting_Y+1)*sizeof(sym_t) > beta) {
+      if ((seg.Ending_Y - seg.Starting_Y+1)*sizeof(sym_t)+INSERT_COST > beta) {
         lastseg -> next = StoreIntoDB(seg , 1);
         lastseg = lastseg -> next;
       }
     }
-	
   }
-  ////  store the common segment in the backward order from old code
-  //for (m = osize - 1; m >= 0; m--) {
-  //  for (n = nsize - 1; n >= 0; n--) {
-  //    seg.Starting_X = m;
-  //    seg.Starting_Y = n;
-  //    ti = SearchSegBackward(Table_C, ofile, nfile, m, n, Table_C[m][n]);
-  //    seg.Ending_X = ti.x;
-  //    seg.Ending_Y = ti.y;
-  //    // set value of beta
-  //    if (Table_C[m][n].offset == 0 && Table_C[m][n].address == 0) {
-  //      beta = COPY_COST;
-  //    }
-  //    else if (Table_C[m][n].offset != 0 && Table_C[m][n].address != 0) {
-  //      beta = COPYXY_COST;
-  //    }
-  //    else {
-  //      beta = COPYX_COST; // COPYY_COST is the same
-  //    }
-  //    
-  //    if ((seg.Ending_Y - seg.Starting_Y+1)*sizeof(sym_t)+INSERT_COST > beta) {
-  //      lastseg -> next = StoreIntoDB(seg , 2); 
-  //      lastseg = lastseg -> next;
-  //    }
-  //  }
-  //}
 }
 
 /***********************************End of StoreSeg Function**********************************************/
 Twoint  SearchSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value) {
-  Twoint  t;
+  Twoint  t ;
   if (m == -1 || n == -1) {
     t.x = m + 1;
     t.y = n + 1;
     return t;
   }
-  if ( (Table_C[m][n].offset == value.offset) && (Table_C[m][n].address == value.address)
-	 && (Table_C[m][n].offset != 0xffff) && (Table_C[m][n].address != 0xffff)
-	  ) {
+  if ( 
+  	(Table_C[m][n].offset != 0xffff) && (Table_C[m][n].address != 0xffff) && 
+  	(Table_C[m][n].offset == value.offset) && (Table_C[m][n].address == value.address)) {
     //DW::
     //Table_C[m][n] = 's';
-    t = SearchSeg(Table_C, ofile, nfile, m - 1, n - 1, value);
     Table_C[m][n].offset  = 0xffff;
     Table_C[m][n].address = 0xffff;
     
+    t = SearchSeg(Table_C, ofile, nfile, m - 1, n - 1, value);
   } else {
     t.x = m + 1;
     t.y = n + 1;
   }
   return t;
 }
-//Twoint SearchSegBackward(sym_t** Table_C, sym_t * ofile, sym_t* nfile, int m, int n, sym_t value){
-//  Twoint t ;
-//  if (m == -1 || n == new_size_global) {
-//    t.x = m + 1;
-//    t.y = n - 1;
-//    return t;
-//  }
-////  if (ofile[m] == nfile[n] && Table_C[m][n] == 's') {
-//  if ( (Table_C[m][n].offset==value.offset)&&(Table_C[m][n].address==value.address)) {
-//    //Table_C[m][n] = 'n';
-//    t = SearchSegBackward(Table_C, ofile, nfile, m - 1, n + 1, value);
-//  } else {
-//    t.x = m + 1;
-//    t.y = n - 1;
-//  }
-//  return t;
-//}
+
 /***********************************End of SearchSeg Function**********************************************/
 
 Segment * StoreIntoDB(Segment seg, int source)
@@ -383,7 +317,7 @@ void runMDCD(sym_t* newfile) {
   char conmsg[500];
   char  convt[32];
   int lastcopy = 1;
-  cmd_t* tmpcmd;
+
   // N=newsize   
   for (i = 1; i < N + 1; i++) {
     // printf("MDCD %dth round \n", i);
@@ -399,11 +333,6 @@ void runMDCD(sym_t* newfile) {
     sprintf(conmsg,"[%d] %s ", Local_Optimum[i], "Download:  ");
     sprintf(convt," %04X %04X ", newfile[i-1].offset, newfile[i-1].address );
     strcat(conmsg, convt);
-	tmpcmd = (cmd_t*)malloc(sizeof(cmd_t));
-	tmpcmd->type = 0;
-	tmpcmd->inew = i-1;
-	tmpcmd->iold = -1;
-	tmpcmd->length = sizeof(sym_t);
     // printf("%s \n", conmsg);
     Segment Seg;
     Seg = FindJ(i);
@@ -450,7 +379,7 @@ void runMDCD(sym_t* newfile) {
         }
         length = i - k;
         if (Seg.source == 1) {
-          sprintf(conmsg," [%d] [%4d|%4d] %s%c %s ", Local_Optimum[i], Seg.offset, Seg.address,
+          sprintf(conmsg,"[%d] [%4d|%4d] %s%c %s ", Local_Optimum[i], Seg.offset, Seg.address,
                    "Copy", copycmd, "from old code forward, StartingX = ");
           sprintf(convt," %d ", l );
           strcat(conmsg, convt);
@@ -460,37 +389,10 @@ void runMDCD(sym_t* newfile) {
           strcat(conmsg, ", length = " );
           sprintf(convt," %d ", length );
           strcat(conmsg, convt);
-			tmpcmd->length =  length;
-			tmpcmd->inew =  k;
-			tmpcmd->iold = l;
-		  if(copycmd == ' ')
-		  {
-			  tmpcmd->type = 1;
-		  }
-		  else if(copycmd == 'x')
-		  {
-			  tmpcmd->type =2;
-			  tmpcmd->x_off = Seg.offset;
-			  tmpcmd->y_off = 0;
-		  }
-		  else if(copycmd == 'y')
-		  {
-			  tmpcmd->type = 3;
-			  tmpcmd->x_off = 0;
-			  tmpcmd->y_off = Seg.address;
-		  }
-		  else if(copycmd == 'z')
-		  {
-			  tmpcmd->type =4;
-			  tmpcmd->x_off = Seg.offset;
-			  tmpcmd->y_off = Seg.address;
-		  }
-
         } 
       }
     }
     strcpy(Message[i], conmsg);
-	cmd[i] = *tmpcmd;
   }
 }
 
@@ -512,10 +414,7 @@ Segment FindJ(int i)
         S.Starting_X = tmp-> Starting_X;
         S.Ending_X = tmp-> Ending_X;
         S.Ending_Y = tmp-> Ending_Y;
-        S.source = tmp-> source ; 
-		S.offset = tmp->offset;
-		S.address = tmp->address;
-		S.num = tmp->num;
+        S.source = tmp-> source ;       
       }
     } 
     tmp = tmp -> next ;
@@ -524,162 +423,21 @@ Segment FindJ(int i)
 }
 	
 /***********************************End of FindJ Function**********************************************/
-int lastcmd = 1;
+
 void PrintMessage(int i) {
-  //if (i == 0) {
-  //  // printf("%s \n", Message[0]);
-  //  return;
-  //} else {
-  //  PrintMessage(S[i]);
-  //  if (strstr(Message[i],"Copy")== NULL) {
-  //    Transfer_length += sizeof(sym_t); // 1
-  //  } else {
-  //    Transfer_length += beta;
-  //  }
-  //  printf("%s \n", Message[i]);  	
-	int* stack = (int*) malloc(i*sizeof(int));
-	int count =0;
-	int j=i;
-	while(j>0)
-	{
-		stack[count] = j;
-		j=S[j];
-		count++;
-	}
-	count--;
-	int cmdTail = count;
-	while(count >=0)
-	{
-		if(cmd[stack[count]].type ==0)
-		{
-			if(lastcmd)
-			{
-				Transfer_length += ADD_COST;
-				lastcmd = 0;
-			}
-			Transfer_length += sizeof(sym_t);
-		}
-		else if(cmd[stack[count]].type == 1)
-		{
-			Transfer_length += COPY_COST;
-			lastcmd =1;
-		}
-		else if(cmd[stack[count]].type == 2)
-		{
-			Transfer_length += COPYX_COST;
-			lastcmd =1;
-		}
-		else if(cmd[stack[count]].type == 3)
-		{
-			Transfer_length += COPYY_COST;
-			lastcmd =1;
-		}
-		else if(cmd[stack[count]].type == 4)
-		{
-			Transfer_length += COPYXY_COST;
-			lastcmd =1;
-		}
-
-		printf("%s\n",Message[stack[count]]);
-		count--;
-	}
-	unsigned char* dmmap = (unsigned char *)malloc(Transfer_length * sizeof(unsigned char));
-
-	lastcmd = 1;
-	int alen =0;
-	int alendx = 0;
-	int dx =0;
-	while(cmdTail >=0)
-	{
-		int idx = stack[cmdTail];
-		if(cmd[idx].type ==0)
-		{
-			if(lastcmd)
-			{
-				dmmap[dx] = cmd[idx].type;
-				memcpy(&dmmap[dx+1],&cmd[idx].length,2);
-				alendx = dx+1;
-				dx += ADD_COST;
-			}
-			memcpy(&dmmap[dx],&newfile[cmd[idx].inew].offset,2);
-			memcpy(&dmmap[dx+2],&newfile[cmd[idx].inew].address,2);
-			dx += sizeof(sym_t);
-			if(dx == new_size_global)
-			{
-				memcpy(&dmmap[alendx],&alen,2);
-			}
-			lastcmd = 0;
-		}
-		else if(cmd[idx].type == 1)
-		{
-			dmmap[dx] = cmd[idx].type;
-			memcpy(&dmmap[dx+1],&cmd[idx].length,2);
-			memcpy(&dmmap[dx+3],&cmd[idx].iold,2);
-			dx += COPY_COST;
-			if (alendx>0) {
-				memcpy(&dmmap[alendx], &alen, 2);
-				alen = 0;
-				alendx=0;
-			}	
-			lastcmd =1;
-		}
-		else if(cmd[idx].type == 2)
-		{
-			dmmap[dx] = cmd[idx].type;
-			
-			memcpy(&dmmap[dx+1],&cmd[idx].length,2);
-			memcpy(&dmmap[dx+3],&cmd[idx].iold,2);
-			memcpy(&dmmap[dx+5],&cmd[idx].x_off,2);
-			dx += COPYX_COST;
-			if (alendx>0) {
-				memcpy(&dmmap[alendx], &alen, 2);
-				alen = 0;
-				alendx=0;
-			}	
-			lastcmd =1;
-		}
-		else if(cmd[idx].type == 3)
-		{			
-			dmmap[dx] = cmd[idx].type;
-			
-			memcpy(&dmmap[dx+1],&cmd[idx].length,2);
-			memcpy(&dmmap[dx+3],&cmd[idx].iold,2);
-			memcpy(&dmmap[dx+5],&cmd[idx].y_off,2);
-			dx += COPYY_COST;
-			if (alendx>0) {
-				memcpy(&dmmap[alendx], &alen, 2);
-				alen = 0;
-				alendx=0;
-			}	
-			lastcmd =1;
-		}
-		else if(cmd[idx].type == 4)
-		{
-			dmmap[dx] = cmd[idx].type;
-			
-			memcpy(&dmmap[dx+1],&cmd[idx].length,2);
-			memcpy(&dmmap[dx+3],&cmd[idx].iold,2);
-			memcpy(&dmmap[dx+5],&cmd[idx].x_off,2);
-			memcpy(&dmmap[dx+7],&cmd[idx].y_off,2);
-			dx += COPYXY_COST;
-			if (alendx>0) {
-				memcpy(&dmmap[alendx], &alen, 2);
-				alen = 0;
-				alendx=0;
-			}
-			lastcmd =1;
-		}
-		cmdTail --;
-	}
-	if(deltaFile != NULL)
-	{
-		fwrite(dmmap,Transfer_length,1,deltaFile);
-		fclose(deltaFile);
-	}
-	free(dmmap);
-	free(stack);
+  if (i == 0) {
+    // printf("%s \n", Message[0]);
+    return;
+  } else {
+    PrintMessage(S[i]);
+    if (strstr(Message[i],"Copy")== NULL) {
+      Transfer_length += sizeof(sym_t); // 1
+    } else {
+      Transfer_length += beta;
+    }
+    printf("%s \n", Message[i]);
     //printf("Total Bytes need so far is:  %d \n" , Transfer_length);
-  
+  }
 }
 
 /***********************************End of PrintMessage Function**********************************************/
