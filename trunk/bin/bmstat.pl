@@ -15,10 +15,26 @@ print dt "byte\tbit\n";
 $no = 1;
 for($n0=1;$no<=10;$no++)
 {
-  open bmbit, "<$dir/bm-$no.log" or die"cannot open bm-$no.log";
-  open bmbyte, "<$dir/bm-byte-$no.log" or die"cannot open bm-byte-$no.log"; 
+  open bm, "<$dir/bm-$no.log" or die"cannot open bm-$no.log";
+  open bmbit, "<$dir/bm-byte-$no.log" or die"cannot open bm-byte-$no.log"; 
+  $delta =0;
   $bitdelta =0;
-  $bytedelta =0;
+  while(<bm>)
+  {
+    chomp;
+    
+    if($_)
+    {
+      @rs = split;
+      $type = $rs[0];
+
+      if($type eq "delta")
+      {
+        $delta = $rs[1];
+      }
+
+    }
+  }
   while(<bmbit>)
   {
     chomp;
@@ -30,30 +46,14 @@ for($n0=1;$no<=10;$no++)
 
       if($type eq "delta")
       {
-        $bitdelta = $rs[1];
+        $bitdelta = $rs[1]/8;
       }
 
     }
   }
-  while(<bmbyte>)
-  {
-    chomp;
-    
-    if($_)
-    {
-      @rs = split;
-      $type = $rs[0];
-
-      if($type eq "delta")
-      {
-        $bytedelta = $rs[1]/8;
-      }
-
-    }
-  }
-  print dt "$bitdelta\t$bytedelta\n";
+  print dt "$delta\t$bitdelta\n";
+  close bm;
   close bmbit;
-  close bmbyte;
 }
 close dt;
 exit;
