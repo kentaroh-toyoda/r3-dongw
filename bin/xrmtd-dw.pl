@@ -4,13 +4,13 @@ $os = $^O;
 
 if ($os =~ /MSWin32/) {
   $diff = "..\\diff_r3\\win32\\diff.exe";
-  $xdiff = "..\\rmtd_r2\\win32\\xrmtd.exe";
+  $xdiff = "..\\rmtd_r2\\win32\\xrmtd_dw.exe";
   $bi   = "..\\bi\\win32\\bi.exe";
   $si   = "..\\bi\\win32\\si.exe";
 }
 elsif ($os =~ /linux/) {
 	$diff = "../diff_r3/linux/diff.exe";
-	$xdiff = "../rmtd_r2/linux/xrmtd.exe";
+	$xdiff = "../rmtd_r2/linux/xrmtd_dw.exe";
 	$bi   = "../bi/linux/bi.exe";
 	$si   = "../bi/linux/si.exe";
 }
