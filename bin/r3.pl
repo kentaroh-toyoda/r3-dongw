@@ -3,17 +3,20 @@
 $os = $^O;
 
 if ($os =~ /MSWin32/) {
-  $diff = "..\\diff_r3\\win32\\diff.exe";
+	$extend = "..\\diff_r3\\win32\\bitToByte.exe";
+	$diff_bit = "..\\diff_r3\\win32\\diff_bit.exe";
+	$diff = "..\\diff_r3\\win32\\diff.exe";
   $bi   = "..\\bi\\win32\\bi.exe";
   $si   = "..\\bi\\win32\\si.exe";
+  #$diff_dmt = "..\\diff_r3\\win32\\diff_dmt.exe";
 }
 elsif ($os =~ /linux/) {
 	$extend = "../diff_r3/linux/bitToByte.exe";
-	$diff_dmt = "../diff_r3/linux/diff_dmt.exe";
 	$diff_bit = "../diff_r3/linux/diff_bit.exe";
 	$diff = "../diff_r3/linux/diff.exe";
 	$bi   = "../bi/linux/bi.exe";
 	$si   = "../bi/linux/si.exe";
+	#$diff_dmt = "../diff_r3/linux/diff_dmt.exe";
 }
 
 sub excmd() {
@@ -176,7 +179,7 @@ while (<cc>) {
 		&excmd("$extend $dir1/build/telosb/bm.raw $dir1/build/telosb/bmbyte.raw > ../benchmarks/extend-$no-dir1.log");
 		&excmd("$extend $dir2/build/telosb/bm.raw $dir2/build/telosb/bmbyte.raw > ../benchmarks/extend-$no-dir2.log");
 		#&excmd("$diff $dir1/build/telosb/bmbyte.raw $dir2/build/telosb/bmbyte.raw ../benchmarks/delta-bmbyte-$no.raw > ../benchmarks/r3-bm-byte-$no.log");
-		&excmd("$diff_dmt $dir1/build/telosb/bm.raw $dir2/build/telosb/bm.raw ../benchmarks/delta-bm-$no.raw > ../benchmarks/bm/bm-$no.log");
+		&excmd("$diff $dir1/build/telosb/bm.raw $dir2/build/telosb/bm.raw ../benchmarks/delta-bm-$no.raw > ../benchmarks/bm/bm-$no.log");
 		&excmd("$diff_bit $dir1/build/telosb/bmbyte.raw $dir2/build/telosb/bmbyte.raw ../benchmarks/delta-bmbyte-$no.raw > ../benchmarks/bm/bm-byte-$no.log");
 		$outdelta = -s "../benchmarks/delta-out-$no.raw";
 		$bmdelta  = -s "../benchmarks/delta-bm-$no.raw";
@@ -223,7 +226,7 @@ while (<cc>) {
 		print out "$no $bmk1 $bmk2 $allsize $cr $psi_bi2 $outold $outnew $outdelta $outcr $bmold $bmnew $bmdelta $bmcr $symold $symnew $symdelta $symcr\n";
 	}
 }
-&excmd("./bmstat.pl");
+&excmd("perl ./bmstat.pl");
 close cc;
 close out;
 
