@@ -15,3 +15,5 @@ $info = `gcc -o $dir/diff.exe diff.c`;
 $info = `gcc -o $dir/cons.exe patch.c`;
 $info = `gcc -o $dir/diff_dmt.exe diff_dmt.c`;
 
+$info = `gcc -o $dir/bitToByte.exe bitToByte.c`;
+$info = `gcc -o $dir/diff_bit.exe diff_bit.c`;
