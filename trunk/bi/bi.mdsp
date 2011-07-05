@@ -5,8 +5,8 @@ defaultConfig=0
 
 [Debug]
 // compiler 
-workingDirectory=../Blink-base
-arguments=../Blink-base
+workingDirectory=../Blink-update
+arguments=2 ../Blink-update
 intermediateFilesDirectory=Debug
 outputFilesDirectory=Debug
 compilerPreprocessor=
@@ -86,4 +86,5 @@ extraResourceOptions=
 [Resource]
 [Other]
 [History]
-bi.c,15275
+elf32.h,5302
+bi.c,9925
