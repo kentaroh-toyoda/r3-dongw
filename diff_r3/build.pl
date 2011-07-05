@@ -13,3 +13,5 @@ $info = `mkdir $dir`;  # mkdir
 $info = `gcc -o $dir/diff.exe diff.c`;
 ## note: build patch.exe has problem in Win7
 $info = `gcc -o $dir/cons.exe patch.c`;
+$info = `gcc -o $dir/diff_dmt.exe diff_dmt.c`;
+
