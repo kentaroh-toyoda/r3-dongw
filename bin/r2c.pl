@@ -5,7 +5,7 @@ $os = $^O;
 
 if ($os =~ /MSWin32/) {
   $diff = "..\\diff_r3\\win32\\diff.exe";
-  $xdiff = $diff;
+  $xdiff = "..\\rmtd_r2\\win32\\xrmtd.exe";
   $bi   = "..\\bi\\win32\\bi.exe";
   $si   = "..\\bi\\win32\\si.exe";
 }
@@ -112,7 +112,7 @@ sub fix() {
 }
 
 
-open cc, "<changecases.lst" or die "cannot open changecases.lst\n";
+open cc, "<../benchmarks/changecases.lst" or die "cannot open ../benchmarks/changecases.lst\n";
 open out, ">../gnuplot/r2c.log" or die "cannot open r2c.log\n";
 print out "\# results for R2c\n";
 print out "\#\n";
@@ -176,7 +176,7 @@ while (<cc>) {
 		$gzsize_out = -s "../benchmarks/delta-out-$no.raw.gz";
 		$gzsize_rela = -s "../benchmarks/xrmtd-delta-crela-$no.raw.gz";
 		
-		$gzsize = $gzsize_out + $gzsize_out_rela;
+		$gzsize = $gzsize_out + $gzsize_rela;
 		
 		$deltasize = $ds1 + $ds2;
 		
