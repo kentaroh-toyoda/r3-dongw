@@ -449,8 +449,10 @@ FILE *oldsymtxt, *newsymtxt;
 FILE *symraw;
 	*/
 	
-	printf("file pointers: in%x out%x rel%x crel%x reltxt%x creltxt%x raw%x bm%x\n", in, out, rel, crel,
-	                                    reltxt, creltxt, raw, bm  );
+	//printf("file pointers: in%x out%x rel%x crel%x reltxt%x creltxt%x raw%x bm%x\n", in, out, rel, crel,
+	//                                    reltxt, creltxt, raw, bm  );
+	
+	
 	// symbols address and allocation of 'jump table'
 	/*
 	sprintf(cmd, "%s/build/telosb/oldsym.txt", dir);
@@ -662,7 +664,7 @@ FILE *symraw;
 		fseek(in, offset, SEEK_SET);
 		fread(&myloc.r_addr, 2, 1, in); // 修改成什么值
 		
-		fwrite(&myloc, sizeof(myloc), 1, rel);
+		fwrite(&myloc, 4, 1, rel);
 		
         fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
 		myloc.st_name = symbol.st_name;
@@ -735,7 +737,7 @@ FILE *symraw;
 		fseek(in, offset, SEEK_SET);
 		fread(&myloc.r_addr, 2, 1, in);
 		
-		fwrite(&myloc, sizeof(myloc), 1, rel);
+		fwrite(&myloc, 4, 1, rel);
 		
 		fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
 		
@@ -810,7 +812,7 @@ FILE *symraw;
 		fseek(in, offset, SEEK_SET);
 		fread(&myloc.r_addr, 2, 1, in);
 		
-		fwrite(&myloc, sizeof(myloc), 1, rel);
+		fwrite(&myloc, 4, 1, rel);
 		
 		fprintf(reltxt, "%04X %04X\n", myloc.r_offset, myloc.r_addr);
 		myloc.st_name = symbol.st_name;
@@ -838,19 +840,23 @@ FILE *symraw;
 	}
 	
 	//ptr = rela_header.vnext;
-	printf("hehe2\n");
+	
 
     // write the relocation entry table
     for (ptr = rela_header.vnext; ptr != NULL; ptr = ptr->vnext) {
-		unsigned short tmp=0;
+		  unsigned short tmp=0;
       printf("%04X %04X %x\n", ptr->entry.r_offset, ptr->entry.r_addr, crel);
-	  fwrite(&tmp, 2, 1, crel);
-	  fwrite(&tmp, 2, 1, crel);
-      //fprintf(creltxt, "%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
+	    
+	    tmp=ptr->entry.r_addr;
+	    fwrite(&tmp, 2, 1, crel);
+	  
+	    tmp=ptr->entry.r_offset;
+	    fwrite(&tmp, 2, 1, crel);
+      fprintf(creltxt, "%04X %04X\n", ptr->entry.r_offset, ptr->entry.r_addr);
 	  
     }
 	
-	printf("hehe3\n");
+	
 
     //print_rela();
 	//printf("test: %s\n", getstring(findsymbol(0x1100).st_name, strtab));
