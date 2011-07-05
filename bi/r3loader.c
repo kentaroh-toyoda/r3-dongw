@@ -3,7 +3,7 @@
 #include <memory.h>
 
 typedef unsigned char uint8_t;
-typedef char int8_t;
+//typedef char int8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 
@@ -27,7 +27,7 @@ uint8_t extFlashReadByte() {
 }
 uint16_t extFlashReadWord() {
 	uint16_t result = 0;
-    int8_t  i;
+    uint8_t  i;
     for ( i = 0; i <= 1; i++ )
       result |= ((uint16_t)extFlashReadByte() & 0xff) << (i*8);
     return result;
@@ -35,7 +35,7 @@ uint16_t extFlashReadWord() {
 
 uint32_t extFlashReadDWord() {
 	uint32_t result = 0;
-    int8_t  i;
+    uint8_t  i;
     for ( i = 0; i <= 3; i++ )
       result |= ((uint32_t)extFlashReadByte() & 0xff) << (i*8);
     return result;
