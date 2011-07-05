@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+## note requires bi.exe and rmtd.exe (or another differencing algorithm)
+
 $base = $ARGV[0];
 $update = $ARGV[1];
 
@@ -74,6 +76,6 @@ $cmd = "perl ./hex2raw.pl $update/build/telosb/out.ihex $update/build/telosb/out
 print "$cmd\n";
 $info = `$cmd`;
 
-$cmd = "..\\rmtd_r2\\rmtd.exe $base/build/telosb/out.raw $update/build/telosb/out.raw 8 > r3.log";
+$cmd = "..\\diff_r3\\diff.exe $base/build/telosb/out.raw $update/build/telosb/out.raw blink.delta > r3.log";
 print "$cmd\n";
 $info = `$cmd`;
