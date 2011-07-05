@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include<string.h>
-
 
 // 1 op, 2 oldOffset, 2 newOffset, 2 length
-#define COPY_COST 7
-#define COPYX_COST 9
-#define COPYY_COST 9
-#define COPYXY_COST 11
+#define COPY_COST 5
+#define COPYX_COST 7
+#define COPYY_COST 7
+#define COPYXY_COST 9
 // 1 op, 2 length
 #define INSERT_COST 0
 
@@ -29,6 +27,10 @@ struct Segment {
 	int Starting_Y;
 	int Ending_X;
 	int Ending_Y;
+	
+	int offset;
+	int address;
+	
 	int source;
 	Segment * next;
 	int num;
@@ -43,9 +45,7 @@ typedef struct Twoint {
 } Twoint ;
 
 void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, int nsize);
-void StoreCommonSegNewcode(sym_t** Table_D, sym_t * nfile, int nsize);
 Twoint SearchSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value);
-Twoint SearchSegBackward(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value);
 Segment * StoreIntoDB( Segment seg , int source);
 
 int N ;
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
   // printf("maxsize is : %d  \n", maxsize);
 
   //Initialize Table C
-  Table_C = (sym_t**)malloc((originalsize) * sizeof(sym_t *));
+  Table_C = malloc((originalsize) * sizeof(sym_t *));
 
   if(Table_C == NULL)
   {
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 	
   for(i = 0; i < originalsize; i++)
   {
-    Table_C[i] = (sym_t*)malloc(newsize * sizeof(sym_t));
+    Table_C[i] = malloc(newsize * sizeof(sym_t));
     if(Table_C[i] == NULL)
     {
       fprintf(stderr, "out of memory\n");
@@ -169,57 +169,19 @@ int main(int argc, char *argv[])
   printf("newsize %d\n", newsize*sizeof(sym_t));
 
 
-  
-
   StoreCommonSeg(Table_C, originalfile, newfile, originalsize, newsize);
 
-  // free Table C
-/*  for(i = 0; i < originalsize; i++)
-  {
-    free(Table_C[i]);
-  }
-  free(Table_C); */
-/*
-  //Initilize Table D
-  Table_D = malloc((newsize) * sizeof(sym_t *));
-  // printf("Table D size is %d \n", newsize);
-
-  if(Table_D == NULL)
-  {
-    fprintf(stderr, "out of memory\n");
-    exit(1);
-  }
-	
-  for(i = 0; i < newsize; i++)
-  {
-//   printf("Initialize D  i is %d \n", (newsize - i ));
-    Table_D[i] = malloc((newsize) * sizeof(sym_t));
-    if(Table_D[i] == NULL)
-    {
-      fprintf(stderr, "out of memory\n");
-      exit(1);
-    }
-  }
-
-  // StoreCommon Segments in the new code
-  StoreCommonSegNewcode(Table_D, newfile, newsize);
-
-  // Free Table D
-  for(i = 0; i < newsize; i++)
-  {
-    free(Table_D[i]);
-  }
-  free(Table_D);
-*/
+  
   printf("SegCounter %d \n",Seg_counter );
 
-  /*
+  
   Segment * tmp = (&Seghead) -> next ;
   for( i = 0; i < Seg_counter ; i++ ) {
-    printf("The %d Seg's StartingX is %d , Ending X is %d , StartingY is %d, EndingY is %d  \n", tmp->num, tmp->Starting_X , tmp->Ending_X, tmp->Starting_Y, tmp->Ending_Y);
+    printf("The %d Seg's StartingX is %d , Ending X is %d , StartingY is %d, EndingY is %d (%d,%d) \n", tmp->num, tmp->Starting_X , tmp->Ending_X, tmp->Starting_Y, tmp->Ending_Y,
+        tmp->offset, tmp->address);
     tmp = tmp -> next ;
   }
-  */
+  
 
   // run MDCD
   N = newsize;
@@ -240,12 +202,8 @@ int main(int argc, char *argv[])
   S[0] = 0;
   //printf("\n %d \n", beta);
   runMDCD(newfile);
-  //for(i=0;i<N+1;i++)
-  //{
-	 // printf("i=%d s[i]=%d %s\n",i,S[i],Message[i]);
-  //}
   printf("delta %d\n",Local_Optimum[N]);
-  //PrintMessage(N);
+  PrintMessage(N);
   // system("PAUSE");
   
   for(i = 0; i < originalsize; i++)
@@ -260,6 +218,7 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
   int i , j , m , n;
   Segment seg;
   Twoint  ti;
+  int off, addr;
 
   for (i = 0; i < osize; i++) {
     for (j = 0; j < nsize; j++) {
@@ -280,35 +239,14 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
     for (n = nsize - 1; n >= 0; n--) {
       seg.Ending_X = m;
       seg.Ending_Y = n;
+      
+      seg.offset = Table_C[m][n].offset;
+      seg.address = Table_C[m][n].address;
+      
       ti = SearchSeg(Table_C, ofile, nfile, m, n, Table_C[m][n]);
       seg.Starting_X = ti.x;
       seg.Starting_Y = ti.y; 
-      // set value of beta
-      if (Table_C[m][n].offset == 0 && Table_C[m][n].address == 0) {
-        beta = COPY_COST;
-      }
-      else if (Table_C[m][n].offset != 0 && Table_C[m][n].address != 0) {
-        beta = COPYXY_COST;
-      }
-      else {
-        beta = COPYX_COST; // COPYY_COST is the same
-      }
-      // the length is actally  seg.Ending_Y - seg.Starting_Y+1
-      if ((seg.Ending_Y - seg.Starting_Y+1)*sizeof(sym_t)+INSERT_COST > beta) {
-        lastseg -> next = StoreIntoDB(seg , 1);
-        lastseg = lastseg -> next;
-      }
-    }
-  }
-		
-//  store the common segment in the backward order from old code
-  for (m = osize - 1; m >= 0; m--) {
-    for (n = nsize - 1; n >= 0; n--) {
-      seg.Starting_X = m;
-      seg.Starting_Y = n;
-      ti = SearchSegBackward(Table_C, ofile, nfile, m, n, Table_C[m][n]);
-      seg.Ending_X = ti.x;
-      seg.Ending_Y = ti.y;
+      
       // set value of beta
       if (Table_C[m][n].offset == 0 && Table_C[m][n].address == 0) {
         beta = COPY_COST;
@@ -320,57 +258,9 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
         beta = COPYX_COST; // COPYY_COST is the same
       }
       
+      // the length is actally  seg.Ending_Y - seg.Starting_Y+1
       if ((seg.Ending_Y - seg.Starting_Y+1)*sizeof(sym_t)+INSERT_COST > beta) {
-        lastseg -> next = StoreIntoDB(seg , 2); 
-        lastseg = lastseg -> next;
-      }
-    }
-  }
-}
-
-void StoreCommonSegNewcode(sym_t** Table_D, sym_t * nfile, int nsize){
-  int i , j , m , n ;
-  Segment seg;
-  Twoint ti;
-
-  for (i = 0; i < nsize; i++) { 
-    for (j = i ; j < nsize ; j++) {
-      /* if ( nfile[i] == nfile[j] && j > i ) {
-        Table_D[i][j] = 'z';
-      } else {
-        Table_D[i][j] = 'n'; // this prevents searching in wrong areas???
-      } */
-      Table_C[i][j].offset = nfile[j].offset - nfile[i].offset;
-      Table_C[i][j].address = nfile[j].address - nfile[i].address;
-    }
-  }	
-
-// store the common segment in the forward order from new code
-  for (m = nsize - 1; m >= 0; m--) {
-    for (n = nsize - 1; n >= m; n--) {
-      seg.Ending_X = m;
-      seg.Ending_Y = n;
-      ti = SearchSeg(Table_D, nfile, nfile, m, n, Table_D[m][n]);
-      seg.Starting_X = ti.x;
-      seg.Starting_Y = ti.y; 
-      //wei: > or >=
-      if ((seg.Ending_Y - seg.Starting_Y )*sizeof(sym_t)> beta ) {
-        lastseg -> next = StoreIntoDB(seg , 3);
-        lastseg = lastseg -> next;
-      }
-    }
-  }
-		
-//  store the common segment in the backward order from new code
-  for (m = nsize - 1; m >= 0; m--) {
-    for (n = nsize - 1; n >= m; n--) {
-      seg.Starting_X = m;
-      seg.Starting_Y = n;
-      ti = SearchSegBackward(Table_D, nfile, nfile, m, n, Table_D[m][n]);
-      seg.Ending_X = ti.x;
-      seg.Ending_Y = ti.y;
-      if ((seg.Ending_Y - seg.Starting_Y)*sizeof(sym_t) > beta) {
-        lastseg -> next = StoreIntoDB(seg , 4);
+        lastseg -> next = StoreIntoDB(seg , 1);
         lastseg = lastseg -> next;
       }
     }
@@ -385,29 +275,18 @@ Twoint  SearchSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, s
     t.y = n + 1;
     return t;
   }
-  if ( (Table_C[m][n].offset == value.offset) && (Table_C[m][n].address == value.address)) {
+  if ( 
+  	(Table_C[m][n].offset != 0xffff) && (Table_C[m][n].address != 0xffff) && 
+  	(Table_C[m][n].offset == value.offset) && (Table_C[m][n].address == value.address)) {
+    //DW::
+    //Table_C[m][n] = 's';
+    Table_C[m][n].offset  = 0xffff;
+    Table_C[m][n].address = 0xffff;
+    
     t = SearchSeg(Table_C, ofile, nfile, m - 1, n - 1, value);
   } else {
     t.x = m + 1;
     t.y = n + 1;
-  }
-  return t;
-}
-
-Twoint SearchSegBackward(sym_t** Table_C, sym_t * ofile, sym_t* nfile, int m, int n, sym_t value){
-  Twoint t ;
-  if (m == -1 || n == new_size_global) {
-    t.x = m + 1;
-    t.y = n - 1;
-    return t;
-  }
-//  if (ofile[m] == nfile[n] && Table_C[m][n] == 's') {
-  if ( (Table_C[m][n].offset==value.offset)&&(Table_C[m][n].address==value.address)) {
-    //Table_C[m][n] = 'n';
-    t = SearchSegBackward(Table_C, ofile, nfile, m - 1, n + 1, value);
-  } else {
-    t.x = m + 1;
-    t.y = n - 1;
   }
   return t;
 }
@@ -422,6 +301,8 @@ Segment * StoreIntoDB(Segment seg, int source)
   newnode -> Starting_Y = seg.Starting_Y ; 
   newnode -> Ending_X = seg.Ending_X ;
   newnode -> Ending_Y = seg.Ending_Y ;
+  newnode -> offset = seg.offset;
+  newnode -> address = seg.address;
   newnode -> source = source ;   // 1 from old code forward 2 from old code backward 3 from new code forward 4 from new code backward 
   newnode -> num = Seg_counter;
   Seg_counter ++ ;
@@ -465,15 +346,19 @@ void runMDCD(sym_t* newfile) {
       }
       // set beta
       char copycmd = ' ';
-      if (Table_C[l][k].offset == 0 && Table_C[l][k].address == 0) {
+      
+      //if (Table_C[l][k].offset == 0 && Table_C[l][k].address == 0) {
+      if (Seg.offset == 0 && Seg.address == 0) {
         beta = COPY_COST;
         copycmd = ' ';
       }
-      else if (Table_C[l][k].offset != 0 && Table_C[l][k].address != 0) {
+      //else if (Table_C[l][k].offset != 0 && Table_C[l][k].address != 0) {
+      else if (Seg.offset != 0 && Seg.address != 0) {
         beta = COPYXY_COST;
         copycmd = 'z';
       }
-      else if (Table_C[l][k].offset != 0 && Table_C[l][k].address == 0) {
+      //else if (Table_C[l][k].offset != 0 && Table_C[l][k].address == 0) {
+      else if (Seg.offset != 0 && Seg.address == 0) {
         beta = COPYX_COST; 
         copycmd = 'x';
       }
@@ -494,7 +379,7 @@ void runMDCD(sym_t* newfile) {
         }
         length = i - k;
         if (Seg.source == 1) {
-          sprintf(conmsg,"[%d] [%4d|%4d] %s%c %s ", Local_Optimum[i], Table_C[l][k].offset, Table_C[l][k].address,
+          sprintf(conmsg,"[%d] [%4d|%4d] %s%c %s ", Local_Optimum[i], Seg.offset, Seg.address,
                    "Copy", copycmd, "from old code forward, StartingX = ");
           sprintf(convt," %d ", l );
           strcat(conmsg, convt);
@@ -504,38 +389,7 @@ void runMDCD(sym_t* newfile) {
           strcat(conmsg, ", length = " );
           sprintf(convt," %d ", length );
           strcat(conmsg, convt);
-        } else if(Seg.source == 2) {
-          sprintf(conmsg,"[%d] [%4d|%4d] %s%c %s ", Local_Optimum[i], Table_C[l][k].offset, Table_C[l][k].address,
-			  "Copy", copycmd, "from old code backward, StartingX = ");
-          sprintf(convt," %d ", l );
-          strcat(conmsg, convt);
-          strcat(conmsg, ", Starting Y =" );
-          sprintf(convt," %d ", k );
-          strcat(conmsg, convt);
-          strcat(conmsg, ", length = " );
-          sprintf(convt," %d ", length );
-          strcat(conmsg, convt);
-        } else if(Seg.source == 3) {
-          sprintf(conmsg," %s%c %s ", "Copy", copycmd, "from new code forward, StartingX = ");
-          sprintf(convt," %d ", l );
-          strcat(conmsg, convt);
-          strcat(conmsg, ", Starting Y =" );
-          sprintf(convt," %d ", k );
-          strcat(conmsg, convt);
-          strcat(conmsg, ", length = " );
-          sprintf(convt," %d ", length );
-          strcat(conmsg, convt);
-        } else if (Seg.source == 4) {
-          sprintf(conmsg," %s%c %s ", "Copy", copycmd, "from new code forward, StartingX = ");
-          sprintf(convt," %d ", l );
-          strcat(conmsg, convt);
-          strcat(conmsg, ", Starting Y =" );
-          sprintf(convt," %d ", k );
-          strcat(conmsg, convt);
-          strcat(conmsg, ", length = " );
-          sprintf(convt," %d ", length );
-          strcat(conmsg, convt);
-        }
+        } 
       }
     }
     strcpy(Message[i], conmsg);
@@ -571,36 +425,19 @@ Segment FindJ(int i)
 /***********************************End of FindJ Function**********************************************/
 
 void PrintMessage(int i) {
-//	printf("[%d]\n",i);
-  //if (i == 0) {
-  //  // printf("%s \n", Message[0]);
-  //  return;
-  //} else {
-  //  PrintMessage(S[i]);
-  //  //if (strstr(Message[i],"Copy")== NULL) {
-  //  //  Transfer_length += sizeof(sym_t); // 1
-  //  //} else {
-  //  //  Transfer_length += beta;
-  //  //}
-  //  printf("%s \n", Message[i]);
+  if (i == 0) {
+    // printf("%s \n", Message[0]);
+    return;
+  } else {
+    PrintMessage(S[i]);
+    if (strstr(Message[i],"Copy")== NULL) {
+      Transfer_length += sizeof(sym_t); // 1
+    } else {
+      Transfer_length += beta;
+    }
+    printf("%s \n", Message[i]);
     //printf("Total Bytes need so far is:  %d \n" , Transfer_length);
-	int* stack = (int*) malloc(i*sizeof(int));
-	int count =0;
-	int j=i;
-	while(j>0)
-	{
-		stack[count] = j;
-		j=S[j];
-		count++;
-	}
-	count--;
-	while(count >=0)
-	{
-		printf("%s \n",Message[stack[count]]);
-		count--;
-	}
-	free(stack);
-  
+  }
 }
 
 /***********************************End of PrintMessage Function**********************************************/
