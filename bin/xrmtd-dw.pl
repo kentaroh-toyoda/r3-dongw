@@ -21,6 +21,35 @@ sub excmd() {
 	$info = `$cmd`;
 }
 
+sub getsize() {
+	my ($file) = @_;
+	my $totalbytes;
+	my $fixedbytes;
+	
+	open fd, "<$file" or die "cannot open $file\n";
+	while (<fd>) {
+		chomp;
+		if (/^\[([\d]+)\]/) {
+			$totalbytes = $1;
+		}
+	}
+	close fd;
+		
+	&excmd("perl ../rmtd_r2/opx.pl $file > ../benchmarks/xrmtd-fixed.log");
+	open fd, "<../benchmarks/xrmtd-fixed.log";
+	while (<fd>) {
+		if (/reducedbytes:/) {
+			my @rs = split;
+			$rb = $rs[1];
+		}
+			
+	}
+	close fd;
+		
+	$fixedbytes = $totalbytes - $rb;
+	return ($totalbytes,$fixedbytes);
+}
+
 open cc, "<../benchmarks/changecases.lst" or die "cannot open changecases.lst\n";
 while (<cc>) {
 	chomp;
@@ -38,30 +67,9 @@ while (<cc>) {
     # 6. diff for the rela entries
     &excmd("$xdiff $dir1/build/telosb/rela.raw $dir2/build/telosb/rela.raw 5 > ../benchmarks/xrmtd-rela-$no.log");
     
-		open fd, "<../benchmarks/xrmtd-rela-$no.log" or die "cannot open ../benchmarks/xrmtd-rela-$no.log\n";
-		while (<fd>) {
-			chomp;
-			if (/^\[([\d]+)\]/) {
-				$totalbytes = $1;
-			}
-		}
-		close fd;
+		my ($tb,$fb) = &getsize("../benchmarks/xrmtd-rela-$no.log");
 		
-		
-		&excmd("perl ../rmtd_r2/opx.pl ../benchmarks/xrmtd-rela-$no.log > ../benchmarks/xrmtd-fixed-$no.log");
-		open fd, "<../benchmarks/xrmtd-fixed-$no.log";
-		while (<fd>) {
-			if (/reducedbytes:/) {
-				my @rs = split;
-				$rb = $rs[1];
-			}
-			
-		}
-		close fd;
-		
-		$fixedbytes = $totalbytes - $rb;
-		
-		print "<<< $bmk1 $bmk2 $totalbytes $fixedbytes\n";
+		print "<<< $bmk1 $bmk2 $tb $fb\n";
 		
 		
 	}
