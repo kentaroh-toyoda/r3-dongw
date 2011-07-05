@@ -6,7 +6,7 @@ defaultConfig=0
 [Debug]
 // compiler 
 workingDirectory=Debug
-arguments=main1.raw main2.raw delta.raw
+arguments=D:\code\r3-dongw\benchmarks\T2-CntToLeds\build\telosb\all.ext D:\code\r3-dongw\benchmarks\T2-RadioCountToLeds\build\telosb\all.ext delta.raw
 intermediateFilesDirectory=Debug
 outputFilesDirectory=Debug
 compilerPreprocessor=
@@ -85,4 +85,4 @@ extraResourceOptions=
 [Resource]
 [Other]
 [History]
-diff.c,7676
+diff.c,7955

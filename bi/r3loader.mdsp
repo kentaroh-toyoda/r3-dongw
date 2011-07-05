@@ -5,8 +5,8 @@ defaultConfig=0
 
 [Debug]
 // compiler 
-workingDirectory=../Blink-update
-arguments=2 ../Blink-update
+workingDirectory=Debug
+arguments=old3.ext
 intermediateFilesDirectory=Debug
 outputFilesDirectory=Debug
 compilerPreprocessor=
@@ -82,9 +82,8 @@ extraResourceOptions=
 [Source]
 1=r3loader.c
 [Header]
-1=elf32.h
 [Resource]
 [Other]
 [History]
 elf32.h,5302
-r3loader.c,5816
+r3loader.c,3078
