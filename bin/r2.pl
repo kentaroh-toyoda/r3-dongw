@@ -10,6 +10,7 @@ if ($os =~ /MSWin32/) {
 }
 elsif ($os =~ /linux/) {
 	$diff = "../diff_r3/linux/diff.exe";
+	#$xdiff = $diff;
 	$xdiff = "../rmtd_r2/linux/xrmtd.exe";
 	$bi   = "../bi/linux/bi.exe";
 	$si   = "../bi/linux/si.exe";
@@ -183,9 +184,9 @@ while (<cc>) {
     &excmd("$diff $dir1/build/telosb/out.raw $dir2/build/telosb/out.raw ../benchmarks/delta-out-$no.raw > ../benchmarks/r2-out-$no.log");
         
     # 6. diff for the rela entries
-    &excmd("$xdiff $dir1/build/telosb/rela.raw $dir2/build/telosb/rela.raw 5 ../benchmarks/xrmtd-delta-rela-$no.raw> ../benchmarks/xrmtd-rela-$no.log");
+    &excmd("$xdiff $dir1/build/telosb/rela.raw $dir2/build/telosb/rela.raw 5 ../benchmarks/delta-rela-$no.raw> ../benchmarks/rela-$no.log");
     
-    ($dummy,$ds2) = &getsize("../benchmarks/xrmtd-rela-$no.log");
+    ($dummy,$ds2) = &getsize("../benchmarks/rela-$no.log");
     
 		
 		# 7. psi
@@ -197,12 +198,11 @@ while (<cc>) {
 		$psi_bi0 = &getpsi("$dir1/build/telosb/si-bi0.txt", "$dir2/build/telosb/si-bi0.txt");
 		
 		$ds1 = -s "../benchmarks/delta-out-$no.raw";
-		$ds2 = -s "../benchmarks/xrmtd-delta-rela-$no.raw";
+		$ds2 = -s "../benchmarks/delta-rela-$no.raw";
 		
 		# gzip
 		&excmd("gzip -f -9 ../benchmarks/delta-out-$no.raw"); # gen main-n.raw.gz
 		&excmd("gzip -f -9 ../benchmarks/delta-rela-$no.raw"); # gen main-n.raw.gz
-		&excmd("gzip -f -9 ../benchmarks/xrmtd-delta-rela-$no.raw"); # gen main-n.raw.gz
 		
 		$gzsize_out = -s "../benchmarks/delta-out-$no.raw.gz";
 		$gzsize_rela = -s "../benchmarks/delta-rela-$no.raw.gz";

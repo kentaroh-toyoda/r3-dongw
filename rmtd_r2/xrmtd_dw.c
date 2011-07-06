@@ -276,12 +276,12 @@ Twoint  SearchSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, s
     return t;
   }
   if ( 
-  	(Table_C[m][n].offset != 0xffff) && (Table_C[m][n].address != 0xffff) && 
+  	//(Table_C[m][n].offset != 0xffff) && (Table_C[m][n].address != 0xffff) && 
   	(Table_C[m][n].offset == value.offset) && (Table_C[m][n].address == value.address)) {
     //DW::
     //Table_C[m][n] = 's';
-    Table_C[m][n].offset  = 0xffff;
-    Table_C[m][n].address = 0xffff;
+    //Table_C[m][n].offset  = 0xffff;
+    //Table_C[m][n].address = 0xffff;
     
     t = SearchSeg(Table_C, ofile, nfile, m - 1, n - 1, value);
   } else {

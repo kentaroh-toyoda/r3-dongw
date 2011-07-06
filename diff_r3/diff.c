@@ -11,7 +11,7 @@
 #define q 2571
 
 #define dbgflag 0
-
+int memcost =0;
 typedef struct _htentry_t {
 	int offset;
 	struct _htentry_t *next;	
@@ -88,12 +88,15 @@ int main(int argc, char **argv)
 	
 	opt = (int*)malloc((nsize+1)*sizeof(int));
 	memset(opt, 0, (nsize+1)*sizeof(int));
+	memcost += (nsize+1)*sizeof(int);
 	
 	opt0 = (int*)malloc((nsize+1)*sizeof(int));
 	memset(opt0, 0, (nsize+1)*sizeof(int));
+	memcost += (nsize+1)*sizeof(int);
 	
 	opt1 = (int*)malloc((nsize+1)*sizeof(int));
 	memset(opt1, 0, (nsize+1)*sizeof(int));
+	memcost += (nsize+1)*sizeof(int);
 	
 	cmds = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
 	cmds0 = (cmd_t*)malloc((nsize+1)*sizeof(cmd_t));
@@ -117,9 +120,10 @@ int main(int argc, char **argv)
 	generatefootprint();
 	r = diff();
 	finish = clock();
+	printf("time %f\n", (double)(finish-start)/CLOCKS_PER_SEC);
+	printf("delta %d\n",dsize); 
+	printf("memory %d\n",memcost);
 	if(!dbgflag)printcmds(r, nsize);
-	
-	printf("%f seconds.\n", (double)(finish-start)/CLOCKS_PER_SEC);
 	
 	if (argc >=4 && argv[3] != NULL) {
 	  delta = fopen(argv[3], "wb");
@@ -159,6 +163,7 @@ void generatefootprint()
 	for (i=0; i<=osize-p; i++) {
 		int val = hash(ommap, i);
 		htentry_t *newentry = (htentry_t*)malloc(sizeof(htentry_t));
+		memcost += sizeof(htentry_t);
 		newentry->offset = i;
 		newentry->next = NULL;
 		
