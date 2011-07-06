@@ -8,7 +8,7 @@
 
 #define p (beta-alpha)
 #define b 256
-#define q 2570
+#define q 2571
 
 #define dbgflag 0
 //int start;

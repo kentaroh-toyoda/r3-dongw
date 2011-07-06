@@ -58,6 +58,7 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
 Twoint SearchSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value);
 Twoint SearchSegBackward(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value);
 Segment * StoreIntoDB( Segment seg , int source);
+void  PrintMessage1(int i);
 
 int N ;
 int * Local_Optimum;
@@ -226,6 +227,7 @@ int main(int argc, char *argv[])
   //{
 	 // printf("%s\n",Message[i]);
   //}
+  //PrintMessage1(N);
   PrintMessage(N);
   printf("delta %d\n",Transfer_length);
   // system("PAUSE");
@@ -525,6 +527,21 @@ Segment FindJ(int i)
 	
 /***********************************End of FindJ Function**********************************************/
 int lastcmd = 1;
+void PrintMessage1(int i)
+{
+	  if (i == 0) {
+    // printf("%s \n", Message[0]);
+    return;
+  } else {
+    PrintMessage(S[i]);
+    if (strstr(Message[i],"Copy")== NULL) {
+      Transfer_length += sizeof(sym_t); // 1
+    } else {
+      Transfer_length += beta;
+    }
+    printf("%s \n", Message[i]);
+	  }
+}
 void PrintMessage(int i) {
   //if (i == 0) {
   //  // printf("%s \n", Message[0]);
@@ -548,39 +565,95 @@ void PrintMessage(int i) {
 	}
 	count--;
 	int cmdTail = count;
+	//int* CE = (int*)malloc(count * sizeof(int));
+	//int ceCount =0;
+	//AE_t* AE2 = (AE_t*)malloc(count * sizeof(AE_t));
+	//int aeCount = 0;
+	int lastInew = -1;
+	int lastAdd = -1;
+	int lastAdd2 = -1;
+	int AE2Length= 0;
 	while(count >=0)
 	{
 		if(cmd[stack[count]].type ==0)
 		{
+			unsigned short last_off = -1;
+			if(lastInew >= 0)
+			{
+				last_off = newfile[lastInew].offset & 0xff00;
+			}
+			unsigned short cur_off = newfile[cmd[stack[count]].inew].offset & 0xff00;
 			if(lastcmd)
 			{
+				lastInew = cmd[stack[count]].inew;
+				//lastAdd2 = lastAdd;
+				lastAdd = stack[count];
+				AE2Length =1;
 				Transfer_length += ADD_COST;
-				lastcmd = 0;
+				Transfer_length += sizeof(sym_t);
 			}
-			Transfer_length += sizeof(sym_t);
+			else if(last_off == cur_off)
+			{
+				if(lastAdd2 >=0 && cmd[lastAdd2].type == 0)
+				{
+					lastInew = cmd[lastAdd].inew;
+					AE2Length =1;
+					Transfer_length += ADD_COST;
+					lastAdd2 = lastAdd;
+				}
+				cmd[lastAdd].type =5;
+				cmd[stack[count]].type =5;
+				Transfer_length += 3;
+				AE2Length ++;
+				cmd[lastAdd].length = AE2Length;
+			}
+			else
+			{
+				if(cmd[lastAdd].type == 5)
+				{
+					lastInew = cmd[stack[count]].inew;
+					lastAdd2 = lastAdd;
+					lastAdd = stack[count];
+					AE2Length =1;
+					Transfer_length += ADD_COST;
+					Transfer_length += sizeof(sym_t);
+				}
+				else
+				{
+					Transfer_length += sizeof(sym_t);
+					lastAdd2 = lastAdd;
+					lastAdd = stack[count];
+					lastInew = cmd[stack[count]].inew;
+				}
+			}
+			lastcmd = 0;
 		}
 		else if(cmd[stack[count]].type == 1)
 		{
 			Transfer_length += COPY_COST;
 			lastcmd =1;
+			lastAdd2=-1;
 		}
 		else if(cmd[stack[count]].type == 2)
 		{
 			Transfer_length += COPYX_COST;
 			lastcmd =1;
+			lastAdd2=-1;
 		}
 		else if(cmd[stack[count]].type == 3)
 		{
 			Transfer_length += COPYY_COST;
 			lastcmd =1;
+			lastAdd2=-1;
 		}
 		else if(cmd[stack[count]].type == 4)
 		{
 			Transfer_length += COPYXY_COST;
 			lastcmd =1;
+			lastAdd2=-1;
 		}
 
-		printf("%s\n",Message[stack[count]]);
+		printf("%s %d, %d\n",Message[stack[count]],Transfer_length, AE2Length);
 		count--;
 	}
 	unsigned char* dmmap = (unsigned char *)malloc(Transfer_length * sizeof(unsigned char));
@@ -669,7 +742,39 @@ void PrintMessage(int i) {
 			}
 			lastcmd =1;
 		}
-		cmdTail --;
+		else if(cmd[idx].type == 5)
+		{
+			int i;
+			dmmap[dx] = cmd[idx].type;
+			memcpy(&dmmap[dx+1],&cmd[idx].length,2);
+			short high_off = (newfile[cmd[idx].inew].offset & 0xff00) >> 8;
+			memcpy(&dmmap[dx+3],&high_off,1);
+			dx += 4;
+			for(i=0;i<cmd[idx].length;i++)
+			{
+				int curidx = stack[cmdTail-i];
+				short low_off = (newfile[cmd[curidx].inew].offset & 0x00ff);
+				memcpy(&dmmap[dx+i],&low_off,1);
+			}
+			dx+= cmd[idx].length;
+			for(i=0;i<cmd[idx].length;i++)
+			{
+				int curidx = stack[cmdTail-i];
+				short r_addr = newfile[cmd[curidx].inew].address;
+				memcpy(&dmmap[dx+2*i],&r_addr,2);
+			}
+			dx += cmd[idx].length *2;
+			cmdTail -= cmd[idx].length;
+			cmdTail ++;
+			if (alendx>0) {
+				memcpy(&dmmap[alendx], &alen, 2);
+				alen = 0;
+				alendx=0;
+			}
+
+		}
+		//printf("%s %d\n",Message[stack[cmdTail]],dx);
+		cmdTail --; 
 	}
 	if(deltaFile != NULL)
 	{
