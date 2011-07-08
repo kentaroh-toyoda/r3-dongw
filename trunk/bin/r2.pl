@@ -11,7 +11,7 @@ if ($os =~ /MSWin32/) {
 elsif ($os =~ /linux/) {
 	$diff = "../diff_r3/linux/diff.exe";
 	#$xdiff = $diff;
-	$xdiff = "../rmtd_r2/linux/xrmtd_AE1.exe";
+	$xdiff = "../rmtd_r2/linux/xrmtd_AE2.exe";
 	$bi   = "../bi/linux/bi.exe";
 	$si   = "../bi/linux/si.exe";
 }
@@ -222,7 +222,8 @@ while (<cc>) {
 		
 		print "<<< $bmk1 $bmk2 $deltasize $psi_bi0 $ds1 $ds2\n";
 		
-		print out "$no $bmk1 $bmk2 $deltasize $cr $psi_bi0 $outold $outnew $ds1 $cr_out $relaold $relanew $ds2 $cr_rela\n";
+		#print out "$no $bmk1 $bmk2 $deltasize $cr $psi_bi0 $outold $outnew $ds1 $cr_out $relaold $relanew $ds2 $cr_rela\n";
+		print out "$no $bmk1 $bmk2 $deltasize $cr $psi_bi0 $outold $outnew $gzsize_out $cr_out $relaold $relanew $gzsize_rela $cr_rela\n";
 	}
 }
 close cc;
