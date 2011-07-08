@@ -11,7 +11,7 @@ if ($os =~ /MSWin32/) {
 }
 elsif ($os =~ /linux/) {
 	$diff = "../diff_r3/linux/diff.exe";
-	$xdiff = "../rmtd_r2/linux/xrmtd.exe";
+	$xdiff = "../rmtd_r2/linux/xrmtd_AE1.exe";
 	#$xdiff = $diff;
 	$bi   = "../bi/linux/bi.exe";
 	$si   = "../bi/linux/si.exe";

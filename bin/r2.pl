@@ -11,7 +11,7 @@ if ($os =~ /MSWin32/) {
 elsif ($os =~ /linux/) {
 	$diff = "../diff_r3/linux/diff.exe";
 	#$xdiff = $diff;
-	$xdiff = "../rmtd_r2/linux/xrmtd.exe";
+	$xdiff = "../rmtd_r2/linux/xrmtd_AE1.exe";
 	$bi   = "../bi/linux/bi.exe";
 	$si   = "../bi/linux/si.exe";
 }
@@ -186,7 +186,7 @@ while (<cc>) {
     # 6. diff for the rela entries
     &excmd("$xdiff $dir1/build/telosb/rela.raw $dir2/build/telosb/rela.raw 5 ../benchmarks/delta-rela-$no.raw> ../benchmarks/rela-$no.log");
     
-    ($dummy,$ds2) = &getsize("../benchmarks/rela-$no.log");
+    #($dummy,$ds2) = &getsize("../benchmarks/rela-$no.log");
     
 		
 		# 7. psi
