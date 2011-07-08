@@ -24,6 +24,13 @@ typedef struct cmd_t {
 	int y_off;
 } cmd_t;
 
+typedef struct target_addr target_addr;
+struct target_addr{
+	unsigned short address;
+	int count;
+	target_addr* next;
+};
+
 int file_size_global;
 int new_size_global;
 sym_t ** Table_C;
@@ -58,9 +65,11 @@ void StoreCommonSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int osize, in
 Twoint SearchSeg(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value);
 Twoint SearchSegBackward(sym_t** Table_C, sym_t * ofile, sym_t * nfile, int m, int n, sym_t value);
 Segment * StoreIntoDB( Segment seg , int source);
+
 void sort(sym_t* arr,int start, int end);
 int partition(sym_t* arr, int start, int end);
 void exchange(sym_t* a, sym_t* b);
+void addAddr(unsigned short address, target_addr* head);
 
 int N ;
 int * Local_Optimum;
@@ -71,7 +80,7 @@ cmd_t* cmd;
 
 int beta;
 int Transfer_length = 0;
-int copyLength =0;
+
 void runMDCD(sym_t * newfile);
 void PrintMessage(int i);
 Segment FindJ(int i);
@@ -91,7 +100,7 @@ int main(int argc, char *argv[])
 
   FILE *txtfile1 = fopen("rela1.txt","w+");
   FILE *txtfile2 = fopen("rela2.txt","w+");
-    
+  FILE *addrFreq = fopen(argv[5],"w+");
   if (pFile!=NULL)
   {
     fseek (pFile, 0, SEEK_END);
@@ -145,9 +154,19 @@ int main(int argc, char *argv[])
 
   rewind(qFile);
   sort(newfile,0,newsize-1);
+  target_addr * head =  (target_addr*)malloc(sizeof(target_addr));
+  head->next = NULL;
   for (i=0; i<newsize; i++) {
+	  addAddr(newfile[i].address,head);
     fprintf(txtfile2, "%04X %04X\n", newfile[i].offset, newfile[i].address);
   }
+  target_addr* tail = head->next;
+  while(tail !=NULL)
+  {
+	  fprintf(addrFreq,"%04X\t%d\n",tail->address,tail->count);
+	  tail = tail->next;
+  }
+  fclose(addrFreq);
   fclose(txtfile2);
 
   // Segment size 
@@ -232,7 +251,6 @@ int main(int argc, char *argv[])
   //PrintMessage1(N);
   PrintMessage(N);
   printf("delta %d\n",Transfer_length);
-  printf("copyLength %d\n",copyLength);
   // system("PAUSE");
   
   for(i = 0; i < originalsize; i++)
@@ -690,7 +708,6 @@ void PrintMessage(int i) {
 		{
 			dmmap[dx] = cmd[idx].type;
 			memcpy(&dmmap[dx+1],&cmd[idx].length,2);
-			copyLength += cmd[idx].length;
 			memcpy(&dmmap[dx+3],&cmd[idx].iold,2);
 			dx += COPY_COST;
 			if (alendx>0) {
@@ -705,7 +722,6 @@ void PrintMessage(int i) {
 			dmmap[dx] = cmd[idx].type;
 			
 			memcpy(&dmmap[dx+1],&cmd[idx].length,2);
-			copyLength += cmd[idx].length;
 			memcpy(&dmmap[dx+3],&cmd[idx].iold,2);
 			memcpy(&dmmap[dx+5],&cmd[idx].x_off,2);
 			dx += COPYX_COST;
@@ -721,7 +737,6 @@ void PrintMessage(int i) {
 			dmmap[dx] = cmd[idx].type;
 			
 			memcpy(&dmmap[dx+1],&cmd[idx].length,2);
-			copyLength += cmd[idx].length;
 			memcpy(&dmmap[dx+3],&cmd[idx].iold,2);
 			memcpy(&dmmap[dx+5],&cmd[idx].y_off,2);
 			dx += COPYY_COST;
@@ -737,7 +752,6 @@ void PrintMessage(int i) {
 			dmmap[dx] = cmd[idx].type;
 			
 			memcpy(&dmmap[dx+1],&cmd[idx].length,2);
-			copyLength += cmd[idx].length;
 			memcpy(&dmmap[dx+3],&cmd[idx].iold,2);
 			memcpy(&dmmap[dx+5],&cmd[idx].x_off,2);
 			memcpy(&dmmap[dx+7],&cmd[idx].y_off,2);
@@ -773,7 +787,7 @@ void PrintMessage(int i) {
 			lastcmd=1;
 
 		}
-		//printf("%s %d\n",Message[stack[cmdTail]],dx);
+		printf("%s %d\n",Message[stack[cmdTail]],dx);
 		cmdTail --; 
 	}
 	if(deltaFile != NULL)
@@ -826,4 +840,23 @@ void exchange(sym_t* a, sym_t* b)
 	a->offset = b->offset;
 	b->address = tmp.address;
 	b->offset = tmp.offset;
+}
+
+void addAddr(unsigned short address, target_addr* head)
+{
+	target_addr* tail = head;
+	while(tail->next != NULL)
+	{
+		tail = tail->next;
+		if(address == tail->address){
+			tail->count ++;
+			return;
+		}
+	}
+	target_addr *tmp = (target_addr*) malloc(sizeof(target_addr));
+	tmp->address = address;
+	tmp->count =1;
+	tmp->next = NULL;
+	tail->next = tmp;
+
 }
